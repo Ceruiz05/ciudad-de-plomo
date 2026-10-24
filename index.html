@@ -80,8 +80,10 @@ body{
 @keyframes blink{50%{opacity:0}}
 
 /* pantallas superpuestas */
-.overlay{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:14px;text-align:center;background:rgba(13,11,20,.78);padding-block:16px}
+.overlay{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:safe center;
+  gap:14px;text-align:center;background:rgba(13,11,20,.78);padding-block:16px;overflow-y:auto;touch-action:pan-y}
+#err{position:fixed;left:8px;right:8px;bottom:8px;z-index:30;background:#3a0d12;color:#ffd6d6;border:2px solid var(--blood);
+  font:9px/1.6 var(--pixel);padding:8px;user-select:text;-webkit-user-select:text}
 .eyebrow{margin:0;font-size:9px;letter-spacing:.3em;color:var(--brass)}
 h1{margin:0;font-size:clamp(26px,9vw,46px);line-height:1.15;color:var(--cream);font-weight:400;text-wrap:balance;
   text-shadow:3px 3px 0 var(--blood),6px 6px 0 #000}
@@ -133,6 +135,14 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
   #cpage{grid-template-columns:2fr 1fr 1fr}
   .panel.wide{grid-column:auto}
 }
+/* celulares en horizontal: portada compacta para que los botones quepan */
+@media (max-height:480px){
+  .overlay{gap:8px;padding-block:10px}
+  h1{font-size:26px} h2{font-size:15px}
+  .eyebrow,.tag,.fine{font-size:8px}
+  .menu{flex-direction:row;flex-wrap:wrap;justify-content:center;width:min(620px,100%)}
+  .mbtn{padding:11px 12px;font-size:10px}
+}
 @media (orientation:landscape) and (hover:hover) and (pointer:fine){
   #pad{display:none}
   #keys{display:block;position:absolute;left:0;right:0;bottom:2px}
@@ -174,6 +184,8 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
     <div id="cpage"></div>
     <div class="cbar"><button class="mbtn" id="cSkip">SALTAR ▶▶</button><span class="ctap">TOCA PARA SEGUIR ▶</span></div>
   </div>
+
+  <div id="err" hidden></div>
 
   <div id="title" class="overlay">
     <p class="eyebrow">CHICAGO · 1931</p>
@@ -221,6 +233,12 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
 </div>
 
 <script>
+// si algo falla en un celular, el error queda escrito en pantalla para poder diagnosticarlo
+(() => {
+  const report = msg => { const el = document.getElementById('err'); if (!el) return; el.hidden = false; el.textContent = 'Error: ' + msg; };
+  addEventListener('error', e => report(e.message + (e.lineno ? ' (línea ' + e.lineno + ')' : '')));
+  addEventListener('unhandledrejection', e => report(String(e.reason && e.reason.message || e.reason)));
+})();
 (() => {
 'use strict';
 const W = 256, H = 144, GROUND = 124;
