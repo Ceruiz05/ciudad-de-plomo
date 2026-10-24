@@ -1,6 +1,6 @@
 // Service worker de Ciudad de Plomo: guarda el juego para jugar sin internet.
 // Al publicar una versión nueva del juego, sube el número de CACHE.
-const CACHE = 'plomo-v6';
+const CACHE = 'plomo-v7';
 const SHELL = [
   './',
   './index.html',

@@ -80,7 +80,8 @@ body{
 
 /* pantallas superpuestas */
 .overlay{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:safe center;
-  gap:14px;text-align:center;background:rgba(13,11,20,.78);padding-block:16px;overflow-y:auto;touch-action:pan-y}
+  gap:14px;text-align:center;background:rgba(13,11,20,.78);padding-block:16px;overflow-y:auto;touch-action:none}
+.mbtn,#pauseBtn{touch-action:none}
 #err{position:fixed;left:8px;right:8px;bottom:8px;z-index:30;background:#3a0d12;color:#ffd6d6;border:2px solid var(--blood);
   font:9px/1.6 var(--pixel);padding:8px;user-select:text;-webkit-user-select:text}
 .eyebrow{margin:0;font-size:9px;letter-spacing:.3em;color:var(--brass)}
@@ -121,14 +122,13 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
 
 /* horizontal: la pantalla ocupa todo y los mandos flotan encima */
 @media (orientation:landscape){
-  #app{padding-block:8px;gap:0}
-  #stage{flex:1;aspect-ratio:auto;max-height:none;min-height:0}
-  /* mandos separados del borde (curvas y muesca del teléfono) y más grandes para los pulgares */
-  #pad{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom, 0px) + 22px);pointer-events:none;padding:0 18px}
-  #pad .key,#pad .act{pointer-events:auto;opacity:.6}
-  .dpad{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:3px}
-  .actions{grid-template-columns:74px 74px;grid-template-rows:58px 58px;gap:8px 14px}
-  .act{width:74px;height:74px}
+  /* mandos en columnas propias a los lados de la pantalla del juego: no tapan nada */
+  #app{flex-direction:row;align-items:flex-end;gap:12px;padding-block:8px calc(env(safe-area-inset-bottom, 0px) + 14px)}
+  #stage{order:2;flex:1;align-self:stretch;aspect-ratio:auto;max-height:none;min-height:0;min-width:0}
+  #pad{display:contents}
+  .dpad{order:1;flex:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:3px}
+  .actions{order:3;flex:none;grid-template-columns:70px 70px;grid-template-rows:56px 56px;gap:8px 10px}
+  .act{width:70px;height:70px}
   #dialog{left:10%;right:10%}
   /* en horizontal las tres viñetas van en una sola fila */
   #cpage,.cbar{width:min(100%, calc((100dvh - 80px) * 4))}
@@ -199,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 3 capítulos · Versión 6</p>
+    <p class="fine">Prototipo · 3 capítulos · Versión 7</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -1302,9 +1302,25 @@ function endComic() {
   const cb = comic.cb; comic = null; cb();
 }
 $('comic').addEventListener('pointerdown', e => { if (e.target.closest('#cSkip')) return; e.preventDefault(); ensureAudio(); revealPanel(); });
-$('cSkip').onclick = endComic;
+onTap($('cSkip'), endComic);
 
 // ---------------------------------------------------------------- flujo
+// Botones de menú: se activan al levantar el dedo sobre el botón, aunque el dedo se haya movido un poco
+// (con "click" el celular a veces cancelaba el toque y había que insistir). Enter/Espacio siguen funcionando.
+function onTap(el, fn) {
+  let armed = false;
+  el.addEventListener('pointerdown', () => { armed = true; ensureAudio(); });
+  el.addEventListener('pointercancel', () => { armed = false; });
+  el.addEventListener('pointerup', e => {
+    if (!armed) return;
+    armed = false;
+    const r = el.getBoundingClientRect(), m = 24;   // margen generoso para dedos
+    if (e.clientX < r.left - m || e.clientX > r.right + m || e.clientY < r.top - m || e.clientY > r.bottom + m) return;
+    e.preventDefault(); fn(e);
+  });
+  el.addEventListener('click', e => { if (e.detail === 0) fn(e); });   // teclado
+}
+
 function show(id) { ['title', 'pause', 'dead', 'end'].forEach(k => { $(k).hidden = k !== id; }); $('pauseBtn').hidden = id !== null || state === 'title'; }
 function finishChapter() {
   if (state !== 'play') return;
@@ -1351,7 +1367,7 @@ function refreshFull() {
   const label = fsEl() ? 'SALIR DE PANTALLA COMPLETA' : 'PANTALLA COMPLETA';
   for (const id of ['bFull', 'bFull2']) { $(id).hidden = !fsOK; $(id).textContent = label; }
 }
-$('bFull').onclick = $('bFull2').onclick = toggleFull;
+onTap($('bFull'), toggleFull); onTap($('bFull2'), toggleFull);
 document.addEventListener('fullscreenchange', refreshFull);
 document.addEventListener('webkitfullscreenchange', refreshFull);
 refreshFull();
@@ -1360,25 +1376,26 @@ refreshFull();
 let installEvt = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('bInstall').hidden = false; });
 addEventListener('appinstalled', () => { installEvt = null; $('bInstall').hidden = true; });
-$('bInstall').onclick = async () => {
+onTap($('bInstall'), async () => {
   if (!installEvt) return;
   installEvt.prompt();
   try { await installEvt.userChoice; } catch (e) {}
   installEvt = null; $('bInstall').hidden = true;
-};
+});
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone && document.querySelector('link[rel="manifest"]')) $('iosHint').hidden = false;
 
 function wake() { try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {} }
 
-$('bNew').onclick = () => { ensureAudio(); wake(); score = 0; show(null); playComic(() => startChapter(0)); };
-$('bCont').onclick = () => { ensureAudio(); wake(); score = 0; show(null); startChapter(+$('bCont').dataset.ch, false); };
-$('bSnd').onclick = $('bSnd2').onclick = () => { ensureAudio(); setSound(!sound); };
-$('pauseBtn').onclick = () => { ensureAudio(); togglePause(); };
-$('bResume').onclick = togglePause;
+onTap($('bNew'), () => { wake(); score = 0; show(null); playComic(() => startChapter(0)); });
+onTap($('bCont'), () => { wake(); score = 0; show(null); startChapter(+$('bCont').dataset.ch, false); });
+const toggleSound = () => setSound(!sound);
+onTap($('bSnd'), toggleSound); onTap($('bSnd2'), toggleSound);
+onTap($('pauseBtn'), () => togglePause());
+onTap($('bResume'), () => togglePause());
 const retry = () => { score = chapterScore; show(null); loadChapter(chapter); state = 'play'; cardT = 170; fireGrace = 15; $('pauseBtn').hidden = false; };
-$('bRetry').onclick = retry; $('bRetry2').onclick = retry;
-$('bQuit').onclick = $('bQuit2').onclick = toTitle;
-$('bAgain').onclick = () => { score = 0; show(null); startChapter(0); };
+onTap($('bRetry'), retry); onTap($('bRetry2'), retry);
+onTap($('bQuit'), () => toTitle()); onTap($('bQuit2'), () => toTitle());
+onTap($('bAgain'), () => { score = 0; show(null); startChapter(0); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') togglePause(); });
 
 // ---------------------------------------------------------------- tamaño de pantalla
@@ -1411,7 +1428,7 @@ Promise.race([fontReady, new Promise(r => setTimeout(r, 1500))]).then(() => requ
 </script>
 
 <button id="updBanner" hidden style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:40;
-  font:10px 'Press Start 2P',monospace;padding:12px 14px;background:#f2b33d;color:#1a1208;border:3px solid #000;box-shadow:4px 4px 0 #000;cursor:pointer"></button>
+  font:10px 'Press Start 2P',monospace;padding:12px 14px;background:#f2b33d;color:#1a1208;border:3px solid #000;box-shadow:4px 4px 0 #000;cursor:pointer;touch-action:none"></button>
 <script>
 if ('serviceWorker' in navigator) {
   addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
@@ -1423,7 +1440,7 @@ if ('serviceWorker' in navigator) {
       const b = document.getElementById('updBanner');
       b.innerHTML = 'VERSI&Oacute;N NUEVA LISTA &middot; TOCA PARA ACTUALIZAR';
       b.hidden = false;
-      b.onclick = () => location.reload();
+      b.onpointerup = b.onclick = () => location.reload();
     }).catch(() => {});
   };
   addEventListener('load', () => setTimeout(checkUpdate, 800));
