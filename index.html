@@ -606,7 +606,7 @@ function killEnemy(e) {
   const pts = e.kind === 'heavy' ? 250 : 100;
   score += pts; popText(e.x + 4, e.y - 4, '+$' + pts);
   const r = Math.random();
-  const type = r < .45 ? 'cash' : r < .6 ? 'heart' : r < .72 ? 'tommy' : null;
+  const type = r < .45 ? 'cash' : r < .53 ? 'heart' : r < .63 ? 'tommy' : null;
   if (type) pickups.push({ x: e.x, y: e.y, w: 8, h: 6, vy: -2, type });
 }
 
@@ -633,12 +633,9 @@ function update() {
     if (fireGrace > 0) fireGrace--;
     else if (held('fire') && p.cool <= 0) {
       const y = p.crouch ? p.y + 3 : p.y + 6;
-      let vy = 0;
-      // desde lo alto de una caja el disparo baja en diagonal hacia el pecho de los matones
-      if (p.onGround && p.y + p.h < GROUND - 4 && !p.crouch) vy = Math.min(1, (HIGH - y) / 16);
-      const speed = 4;
-      if (p.ammo > 0) { fire(p, 'p', y, p.face * speed, vy); p.ammo--; p.cool = 6; SFX.tommy(); }
-      else { fire(p, 'p', y, p.face * speed, vy); p.cool = 16; SFX.shot(); }
+      const speed = 4;   // las balas siempre van rectas: sin apuntado automático
+      if (p.ammo > 0) { fire(p, 'p', y, p.face * speed); p.ammo--; p.cool = 6; SFX.tommy(); }
+      else { fire(p, 'p', y, p.face * speed); p.cool = 18; SFX.shot(); }
     }
     p.vy = Math.min(p.vy + 0.25, 5);
     moveX(p, p.vx); moveY(p, p.vy);
@@ -658,7 +655,7 @@ function update() {
   // jefe
   if (lv.boss && !boss && p.x > lv.len - W + 30) {
     bossLock = true;
-    boss = { x: lv.len - 30, y: GROUND - 20, w: 12, h: 20, vx: 0, vy: 0, face: -1, onGround: true, hp: 30, max: 30,
+    boss = { x: lv.len - 30, y: GROUND - 20, w: 12, h: 20, vx: 0, vy: 0, face: -1, onGround: true, hp: 42, max: 42,
       spr: SPR.boss, t: 90, burst: 0, bt: 0, warn: 0, dir: -1, flash: 0, hurt: 0, dead: false, deadT: 0, called: false, intro: 60 };
     shake = 6; SFX.warn();
   }
@@ -694,7 +691,7 @@ function updateEnemies() {
     if (e.dead) { e.deadT++; continue; }
     if (e.hurt > 0) e.hurt--;
     if (e.flash > 0) e.flash--;
-    if (!e.active && e.x < cam + W + 12) { e.active = true; e.t = Math.floor(rand(50, 100)); }
+    if (!e.active && e.x < cam + W + 12) { e.active = true; e.t = Math.floor(rand(35, 70)); }
     if (!e.active) continue;
     const dx = (p.x + 4) - (e.x + 4);
     e.face = dx > 0 ? 1 : -1;
@@ -715,10 +712,10 @@ function updateEnemies() {
     if (e.warn > 0) e.warn--;
     if (e.t <= 0) {
       e.burst = e.kind === 'heavy' ? 3 : 1; e.bt = 0;
-      e.t = Math.floor(rand(90, 150)) + (e.kind === 'heavy' ? 30 : 0);
+      e.t = Math.floor(rand(65, 115)) + (e.kind === 'heavy' ? 25 : 0);
     }
     if (e.burst > 0 && --e.bt <= 0) {
-      fire(e, 'e', e.crouch ? e.y + 3 : e.y + 6, e.face * 1.9);
+      fire(e, 'e', e.crouch ? e.y + 3 : e.y + 6, e.face * 2.4);
       SFX.eshot(); e.burst--; e.bt = 10;
     }
   }
@@ -740,7 +737,7 @@ function updateBoss() {
   if (b.burst > 0) {
     if (--b.bt <= 0) {
       const y = b.pattern === 'mix' ? (b.burst % 2 ? HIGH : LOW) : b.pattern;
-      fire(b, 'e', y, b.face * (angry ? 2.2 : 1.9), 0, true);
+      fire(b, 'e', y, b.face * (angry ? 2.8 : 2.3), 0, true);
       SFX.tommy(); b.burst--; b.bt = angry ? 7 : 9;
     }
   } else {
@@ -800,7 +797,7 @@ function updatePickups() {
       k.got = true; SFX.pickup();
       if (k.type === 'cash') { score += 100; popText(k.x, k.y - 4, '+$100'); }
       if (k.type === 'heart') { player.hp = Math.min(player.max, player.hp + 1); popText(k.x, k.y - 4, '+1 VIDA', '#ff8a8a'); }
-      if (k.type === 'tommy') { player.ammo += 40; popText(k.x, k.y - 4, 'THOMPSON', '#f2b33d'); }
+      if (k.type === 'tommy') { player.ammo += 30; popText(k.x, k.y - 4, 'THOMPSON', '#f2b33d'); }
     }
   }
   pickups = pickups.filter(k => !k.got);
