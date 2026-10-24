@@ -199,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 3 capítulos · Versión 10</p>
+    <p class="fine">Prototipo · 5 capítulos y epílogo · Versión 11</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -223,7 +223,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
   </div>
 
   <div id="end" class="overlay" hidden>
-    <p class="eyebrow">LAKE SHORE · 5:12 AM</p>
+    <p class="eyebrow">MAR DE LA TRANQUILIDAD · 1931</p>
     <h1>LA DEUDA<br>ESTÁ PAGADA</h1>
     <p class="tag" id="endScore"></p>
     <div class="menu">
@@ -326,6 +326,7 @@ const SPR = {
   heavy: sheet(MAN, PAL.heavy, '#6e3440'),
   boss: sheet(BOSS, PAL.boss, '#7a5a8c'),
 };
+SPR.gunner = SPR.heavy;   // pistoleros de los techos en el río
 const HEART = makeSprite(['.rr.rr.', 'rrrrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'], { r:'#e0424a' });
 const HEART_E = makeSprite(['.rr.rr.', 'r..r..r', 'r.....r', '.r...r.', '..r.r..', '...r...'], { r:'#5a3a48' });
 const CASH = makeSprite(['gggggggg', 'gllggllg', 'glgddglg', 'gllggllg', 'gggggggg'], { g:'#3f9a4f', l:'#9fe0a0', d:'#1f5a2a' });
@@ -408,10 +409,65 @@ const LEVELS = [
     outro: [
       T('CASTELLANO', 'La ciudad no cambia por un hombre, Tony. Mañana habrá otro como yo.'),
       T('TONY', 'Puede ser. Pero ese no le debe nada a Sal.'),
-      T('NARRADOR', 'Amanece sobre el lago. Tony Russo deja su sombrero sobre la tumba de su hermano.'),
+      T('CASTELLANO', 'Mi whisky... ya va río abajo. El almacén de los Moretti... nunca lo vas a encontrar.'),
+      T('TONY', 'Ya lo encontré. Y en tu muelle hay un helicóptero que no vas a necesitar.'),
     ],
   },
+  {
+    name: 'EL RÍO', theme: 'river', mode: 'heli', len: 1700,
+    hint: 'CRUCETA MUEVE   B DISPARA',
+    // edificios del río: [x, ancho, alto]; los pistoleros caen sobre los techos
+    solids: [[200,40,30,'building'],[320,30,46,'building'],[460,52,22,'building'],[600,36,54,'building'],[740,44,32,'building'],
+             [880,30,42,'building'],[1000,60,26,'building'],[1140,40,50,'building'],[1280,36,30,'building'],[1420,50,24,'building']],
+    enemies: [[215,'gunner'],[330,'tank'],[400,'gunner'],[480,'gunner'],[505,'tank'],[612,'gunner'],[690,'gunner'],[760,'tank'],
+              [890,'gunner'],[950,'gunner'],[1020,'gunner'],[1050,'tank'],[1150,'gunner'],[1230,'gunner'],[1290,'tank'],[1435,'gunner'],[1460,'gunner']],
+    pickups: [],
+    intro: [
+      T('NARRADOR', 'Río Chicago, 6:30 de la mañana. El sol pinta de naranja las chimeneas.'),
+      T('TONY', 'El último cargamento de Castellano sale hoy. Sin whisky no hay negocio.'),
+      T('NARRADOR', 'Mueve el helicóptero con la cruceta. B dispara al frente y en diagonal hacia abajo.'),
+      T('NARRADOR', 'Revienta las torres de whisky XXX y a los pistoleros de los techos.'),
+    ],
+    outro: [
+      T('TONY', 'Hasta aquí llega el helicóptero. El resto lo hago a pie.'),
+    ],
+  },
+  {
+    name: 'EL ALMACÉN', theme: 'warehouse', len: 1150, vat: true,
+    hint: 'REVIENTA LA GRAN CUBA',
+    solids: [[150,12,10],[230,10,12,'whisky'],[244,10,12,'whisky'],[340,12,20],[430,10,12,'whisky'],[520,24,10],
+             [600,10,12,'whisky'],[614,10,12,'whisky'],[628,10,12,'whisky'],[720,12,20],[810,10,12,'whisky'],[880,12,10],
+             [960,10,12,'whisky'],[974,10,12,'whisky'],[1080,44,56,'vat']],
+    enemies: [[200,'goon'],[290,'low'],[390,'goon'],[470,'heavy'],[560,'goon'],[660,'low'],[680,'goon'],[770,'heavy'],
+              [850,'goon'],[920,'low'],[1010,'heavy'],[1040,'goon']],
+    pickups: [[330,'tommy'],[700,'heart'],[900,'tommy']],
+    intro: [
+      T('NARRADOR', 'El almacén Moretti: diez mil barriles de whisky de contrabando.'),
+      T('TONY', 'Los barriles con la marca XXX revientan con un par de tiros. Mejor no estar cerca.'),
+      T('NARRADOR', 'Al fondo está la gran cuba. Reviéntala y se acaba el negocio.'),
+    ],
+    outro: [
+      T('NARRADOR', 'La cuba estalla. Un río de whisky en llamas baja hacia el lago.'),
+      T('TONY', 'Se acabó el negocio, Vittorio. Ahora sí.'),
+    ],
+  },
+  {
+    name: 'EL CEMENTERIO', theme: 'cemetery', mode: 'walk', len: 520, label: 'EPÍLOGO',
+    hint: 'CAMINA HASTA LA TUMBA DE SAL',
+    solids: [], enemies: [], pickups: [],
+    intro: [
+      T('NARRADOR', 'Cementerio de Mount Olivet. El sol se pone sobre las lápidas.'),
+    ],
+    grave: [
+      T('TONY', 'Hola, Sal. Ya está. Castellano no le va a hacer daño a nadie más.'),
+      T('TONY', 'Te dejo mi sombrero. Siempre decías que me quedaba grande.'),
+      T('NARRADOR', 'Detrás del cementerio, en la feria abandonada, esperaba el viejo cohete de la atracción "Luna 31".'),
+      T('TONY', 'Sal siempre quiso subirse. Esta vez vamos los dos.'),
+    ],
+    outro: [],
+  },
 ];
+const GRAVE_X = 430;   // tumba de Sal en el epílogo
 
 // ---------------------------------------------------------------- audio (8 bits por WebAudio)
 let AC = null, master = null, musicGain = null, noiseBuf = null, sound = true, tempo = 126;
@@ -466,6 +522,8 @@ const SFX = {
   win()    { [523, 659, 784, 1046].forEach((f, i) => tone(f, f, 0.14, 'square', 0.09, i * 0.12)); },
   flip()   { noise(0.09, 0.07, 0, 5000); },
   bang()   { noise(0.6, 0.45, 0, 1400); tone(140, 30, 0.5, 'square', 0.18); noise(1.2, 0.15, 0.2, 400); },
+  boom()   { noise(0.7, 0.4, 0, 900); tone(110, 28, 0.6, 'square', 0.16); },
+  rocket() { noise(3.5, 0.3, 0, 700); tone(60, 220, 3.5, 'sawtooth', 0.08); },
 };
 // línea de bajo "walking" en La menor
 const BASS = [0, null, 3, null, 7, null, 0, -2, -4, null, 0, null, -5, null, -1, null];
@@ -505,6 +563,7 @@ addEventListener('keydown', e => {
   if (e.repeat) return;
   if (state === 'dialog' && (k === 'jump' || k === 'fire' || e.code === 'Enter')) advanceDialog();
   if (state === 'comic' && (k === 'jump' || k === 'fire' || e.code === 'Enter')) revealPanel();
+  if (state === 'finale' && finaleT > 90 && (k === 'jump' || k === 'fire' || e.code === 'Enter')) endGame();
   if ((e.code === 'KeyP' || e.code === 'Escape') && (state === 'play' || state === 'pause')) togglePause();
 });
 addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) keys[k] = 0; });
@@ -524,7 +583,10 @@ pad.addEventListener('pointerdown', e => {
   ptrs.set(e.pointerId, k);
   refreshTouch();
   if (state === 'dialog' && (k === 'jump' || k === 'fire')) advanceDialog();
+  if (state === 'finale' && finaleT > 90 && (k === 'jump' || k === 'fire')) endGame();
 });
+// tocar la pantalla del juego durante el final lo salta
+$('screen').addEventListener('pointerdown', () => { if (state === 'finale' && finaleT > 90) endGame(); });
 addEventListener('pointermove', e => { if (ptrs.has(e.pointerId)) { ptrs.set(e.pointerId, keyAt(e.clientX, e.clientY)); refreshTouch(); } });
 const lift = e => { if (ptrs.delete(e.pointerId)) refreshTouch(); };
 addEventListener('pointerup', lift);
@@ -536,27 +598,36 @@ $('dialog').addEventListener('pointerdown', e => { e.preventDefault(); ensureAud
 let state = 'title';          // title | dialog | play | pause | dead | end
 let chapter = 0, lv = null, cam = 0, frame = 0, score = 0, chapterScore = 0;
 let player, enemies, bullets, solids, pickups, parts, texts, boss, bossLock, cardT, exitOpen, shake, flash, endT, deadT, fireGrace;
+let booms = [], landing = false, landed = false, vatDown = false, atGrave = false, finaleT = 0;
+const HELI_SCROLL = 0.7;      // velocidad de avance del helicóptero
+const SOLID_HP = { whisky: 2, vat: 24 };
 const rand = (a, b) => a + Math.random() * (b - a);
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
 function newMan(x, kind) {
   const low = kind === 'low';
+  if (kind === 'tank')   // torre de whisky: blanco fijo que explota
+    return { x, y: 0, w: 14, h: 18, vx: 0, vy: 0, face: -1, onGround: false, kind, hp: 3, active: false, dead: false, deadT: 0, hurt: 0, flash: 0, warn: 0, t: 0 };
   return { x, y: GROUND - (low ? 8 : 16), w: 8, h: low ? 8 : 16, vx: 0, vy: 0, face: -1, onGround: true, anim: 0,
     kind, spr: SPR[kind], crouch: low, hp: kind === 'heavy' ? 4 : 2, t: 0, warn: 0, active: false, dead: false,
     deadT: 0, hurt: 0, flash: 0, burst: 0, bt: 0, duck: 0, duckIn: 0, stand: 0, shotLow: low };
 }
 function loadChapter(i) {
   chapter = i; lv = LEVELS[i];
-  solids = lv.solids.map(([x, w, h, k]) => ({ x, y: GROUND - h, w, h, k: k || 'crate' }));
+  solids = lv.solids.map(([x, w, h, k]) => ({ x, y: GROUND - h, w, h, k: k || 'crate', hp: SOLID_HP[k] || 0, max: SOLID_HP[k] || 0, chain: 0, hit: 0 }));
   // cajas altas = dos cajas apiladas
   enemies = lv.enemies.map(([x, k]) => newMan(x, k));
+  if (lv.mode === 'heli') enemies.forEach(e => { e.y = 0; });   // caen sobre los techos
   pickups = lv.pickups.map(([x, type]) => ({ x, y: GROUND - 20, w: 8, h: 6, vy: 0, type }));
-  bullets = []; parts = []; texts = [];
-  player = { x: 24, y: GROUND - 16, w: 8, h: 16, vx: 0, vy: 0, face: 1, onGround: true, anim: 0, crouch: false,
-    spr: SPR.tony, hp: 5, max: 5, inv: 0, cool: 0, ammo: 0, flash: 0, dead: false };
+  bullets = []; parts = []; texts = []; booms = [];
+  player = lv.mode === 'heli'
+    ? { x: 30, y: 50, w: 20, h: 11, vx: 0, vy: 0, face: 1, hp: 5, max: 5, inv: 0, cool: 0, ammo: 0, flash: 0, dead: false, heli: true }
+    : { x: 24, y: GROUND - 16, w: 8, h: 16, vx: 0, vy: 0, face: 1, onGround: true, anim: 0, crouch: false,
+        spr: SPR.tony, hp: 5, max: 5, inv: 0, cool: 0, ammo: 0, flash: 0, dead: false };
   boss = null; bossLock = false; cam = 0; cardT = 0; exitOpen = false; shake = 0; flash = 0; endT = 0; deadT = 0; fireGrace = 0;
+  landing = false; landed = false; vatDown = false; atGrave = false; finaleT = 0;
   chapterScore = score;
-  tempo = lv.boss ? 138 : 126;
+  tempo = lv.boss ? 138 : lv.mode === 'heli' ? 144 : lv.mode === 'walk' ? 92 : 126;
   buildBackground(lv.theme);
 }
 function startChapter(i, withIntro = true) {
@@ -606,23 +677,147 @@ function hurtPlayer(n = 1) {
   if (player.hp <= 0) { player.dead = true; player.deadT = 0; state = 'dying'; SFX.die(); }
 }
 function killEnemy(e) {
+  if (e.dead) return;
   e.dead = true; e.deadT = 0;
-  const pts = e.kind === 'heavy' ? 250 : 100;
+  const pts = e.kind === 'heavy' ? 250 : e.kind === 'tank' ? 150 : 100;
   score += pts; popText(e.x + 4, e.y - 4, '+$' + pts);
+  if (e.kind === 'tank') { explode(e.x + e.w / 2, e.y + e.h / 2, 26); return; }
+  if (lv.mode === 'heli') return;   // en el río no hay premios que recoger
   const r = Math.random();
   const type = r < .45 ? 'cash' : r < .53 ? 'heart' : r < .63 ? 'tommy' : null;
   if (type) pickups.push({ x: e.x, y: e.y, w: 8, h: 6, vy: -2, type });
+}
+
+// Explosión: daña a todo lo que esté cerca (también a Tony) y detona en cadena otros barriles.
+function explode(x, y, r) {
+  shake = Math.max(shake, r > 40 ? 24 : 10); SFX.boom();
+  const cols = ['#ffe27a', '#f2b33d', '#ff6a2a', '#c8323a', '#6a6470'];
+  for (let i = 0; i < r; i++) parts.push({ x, y, vx: rand(-2.4, 2.4), vy: rand(-2.8, .6), life: rand(18, 40), col: cols[i % 5], g: .08 });
+  booms.push({ x, y, r, t: 0 });
+  const near = (cx, cy, rr) => Math.hypot(cx - x, cy - y) < rr;
+  for (const e of enemies) if (!e.dead && near(e.x + e.w / 2, e.y + e.h / 2, r)) killEnemy(e);
+  if (!player.dead && near(player.x + player.w / 2, player.y + player.h / 2, r * .75)) hurtPlayer(1);
+  for (const s of solids) if (s.hp > 0 && !s.chain && near(s.x + s.w / 2, s.y + s.h / 2, r + 6)) { s.hp = 0; s.chain = 8; }
+}
+function destroySolid(s) {
+  s.gone = true;
+  if (s.k === 'vat') {
+    vatDown = true; score += 3000; popText(s.x + s.w / 2, s.y - 6, '+$3000', '#f2b33d');
+    explode(s.x + s.w / 2, s.y + s.h / 2, 70);
+    setTimeout(() => explode(s.x + 8, s.y + 10, 40), 250);
+    setTimeout(() => explode(s.x + s.w - 8, s.y + 20, 40), 500);
+  } else {
+    score += 50; popText(s.x + s.w / 2, s.y - 4, '+$50', '#f2b33d');
+    explode(s.x + s.w / 2, s.y + s.h / 2, 30);
+  }
+}
+function updateWorldFx() {
+  for (const s of solids) if (s.chain > 0 && --s.chain === 0) destroySolid(s);
+  solids = solids.filter(s => !s.gone);
+  for (const s of solids) if (s.hit > 0) s.hit--;
+  for (const b of booms) b.t++;
+  booms = booms.filter(b => b.t < 18);
+  for (const q of parts) { q.x += q.vx; q.y += q.vy; q.vy += q.g || 0; q.life--; }
+  parts = parts.filter(q => q.life > 0);
+  for (const t of texts) { t.y -= .35; t.life--; }
+  texts = texts.filter(t => t.life > 0);
+  if (cardT > 0) cardT--;
+  if (shake > 0) shake--;
+  if (flash > 0) flash--;
+  if (lv.theme === 'mansion' && Math.random() < 0.003) flash = 6;
+  updateRain();
+}
+
+// ---------------------------------------------------------------- helicóptero (capítulo 4)
+function updateHeli() {
+  const p = player;
+  if (!p.dead) {
+    if (landing) {
+      // aterriza solo en la azotea del final
+      const tx = lv.len - 60, ty = GROUND - p.h - 1;
+      p.x += Math.sign(tx - p.x) * Math.min(1, Math.abs(tx - p.x));
+      p.y += Math.sign(ty - p.y) * Math.min(.7, Math.abs(ty - p.y));
+      if (Math.abs(tx - p.x) < 1 && Math.abs(ty - p.y) < 1 && !landed) { landed = true; finishChapter(); }
+    } else {
+      const dx = (held('right') ? 1 : 0) - (held('left') ? 1 : 0), dy = (held('down') ? 1 : 0) - (held('jump') ? 1 : 0);
+      p.x += dx * 1.4 + HELI_SCROLL; p.y += dy * 1.25;
+      p.x = Math.max(cam + 4, Math.min(cam + W - p.w - 4, p.x));
+      p.y = Math.max(16, Math.min(GROUND - p.h - 1, p.y));
+      for (const s of solids) if (overlap(p, s)) p.y = s.y - p.h - 1;   // no atraviesa edificios
+      if (p.cool > 0) p.cool--;
+      if (fireGrace > 0) fireGrace--;
+      else if (held('fire') && p.cool <= 0) {
+        // dos ametralladoras: una al frente y otra en diagonal hacia los techos
+        bullets.push({ x: p.x + p.w + 2, y: p.y + 6, w: 4, h: 2, vx: 4.2, vy: 0, from: 'p', life: 120 });
+        bullets.push({ x: p.x + p.w - 4, y: p.y + p.h, w: 3, h: 3, vx: 2.6, vy: 2.4, from: 'p', life: 120 });
+        p.flash = 4; p.cool = 9; SFX.tommy();
+      }
+    }
+    if (p.inv > 0) p.inv--;
+    if (p.flash > 0) p.flash--;
+    if (frame % 40 === 0) tone(90, 80, .12, 'square', .025);   // zumbido del rotor
+  } else {
+    p.deadT++; p.y = Math.min(GROUND - p.h, p.y + 1.6); p.x += .5;
+    if (frame % 3 === 0) parts.push({ x: p.x + 6, y: p.y + 2, vx: rand(-.3, .3), vy: -.6, life: 30, col: '#5a5460' });
+    if (p.deadT === 80) { state = 'dead'; show('dead'); }
+  }
+  if (!landing) { cam = Math.min(lv.len - W, cam + HELI_SCROLL); if (cam >= lv.len - W) landing = true; }
+}
+function updateHeliEnemies() {
+  const p = player;
+  for (const e of enemies) {
+    if (e.dead) { e.deadT++; continue; }
+    if (e.hurt > 0) e.hurt--;
+    if (e.flash > 0) e.flash--;
+    e.vy = Math.min((e.vy || 0) + .25, 5); moveY(e, e.vy);
+    if (e.kind === 'tank') continue;
+    if (!e.active && e.x < cam + W - 10) { e.active = true; e.t = Math.floor(rand(30, 70)); }
+    if (!e.active || e.x < cam - 10 || p.dead || landing) continue;
+    e.face = p.x + p.w / 2 > e.x + 4 ? 1 : -1;
+    if (--e.t === 26) { e.warn = 26; e.shotLow = false; SFX.warn(); }
+    if (e.warn > 0) e.warn--;
+    if (e.t <= 0) {
+      // tiro dirigido al helicóptero
+      const sx = e.x + (e.face > 0 ? e.w + 2 : -3), sy = e.y + 5;
+      const dx = (p.x + p.w / 2) - sx, dy = (p.y + p.h / 2) - sy, d = Math.hypot(dx, dy) || 1;
+      bullets.push({ x: sx, y: sy, w: 3, h: 3, vx: dx / d * 2.1, vy: dy / d * 2.1, from: 'e', life: 200 });
+      e.flash = 4; SFX.eshot();
+      e.t = Math.floor(rand(80, 130));
+    }
+  }
 }
 
 // ---------------------------------------------------------------- actualización
 function update() {
   frame++;
   if (state === 'title') { cam = (frame * 0.35) % (lv.len - W); updateRain(); return; }
+  if (state === 'finale') { updateFinale(); return; }
   if (state !== 'play' && state !== 'dying') { updateRain(); return; }
 
   const p = player;
   const jumpEdge = held('jump') && !prev.jump;
   prev.jump = held('jump'); prev.fire = held('fire');
+
+  if (lv.mode === 'heli') { updateHeli(); updateHeliEnemies(); updateBullets(); updateWorldFx(); return; }
+
+  if (lv.mode === 'walk' && !p.dead) {
+    // epílogo: solo caminar hasta la tumba de Sal
+    if (atGrave) p.vx = 0;
+    else {
+      const dir = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
+      if (dir) p.face = dir;
+      p.vx = dir * 1;
+    }
+    p.vy = Math.min(p.vy + .25, 5); moveX(p, p.vx); moveY(p, p.vy);
+    if (p.vx) p.anim++;
+    cam = Math.max(0, Math.min(lv.len - W, p.x - W * .4));
+    if (!atGrave && p.x + p.w >= GRAVE_X - 6) {
+      atGrave = true; p.face = 1;
+      say(lv.grave, startFinale);
+    }
+    updateWorldFx();
+    return;
+  }
 
   if (!p.dead) {
     // agacharse
@@ -669,19 +864,12 @@ function update() {
   if (boss) updateBoss();
   updateBullets();
   updatePickups();
-
-  for (const q of parts) { q.x += q.vx; q.y += q.vy; q.vy += q.g || 0; q.life--; }
-  parts = parts.filter(q => q.life > 0);
-  for (const t of texts) { t.y -= .35; t.life--; }
-  texts = texts.filter(t => t.life > 0);
-  if (cardT > 0) cardT--;
-  if (shake > 0) shake--;
-  if (flash > 0) flash--;
-  if (lv.theme === 'mansion' && Math.random() < 0.003) flash = 6;
-  updateRain();
+  updateWorldFx();
 
   // salida del capítulo
-  if (!lv.boss) {
+  if (lv.vat) {
+    if (vatDown && !p.dead && ++endT === 120) finishChapter();
+  } else if (!lv.boss) {
     exitOpen = enemies.every(e => e.dead);
     if (exitOpen && p.x + p.w >= lv.len - 4 && !p.dead) finishChapter();
   } else if (boss && boss.dead) {
@@ -797,8 +985,12 @@ function updateBullets() {
     for (const s of solids) if (overlap(bl, s)) {
       bl.life = 0;
       const sx = bl.vx > 0 ? s.x : s.x + s.w;
+      if (s.k === 'building') { spark(bl.x, bl.y, '#c9a08a', 4); break; }
       spark(sx, bl.y, '#d9a86a', 9); spark(sx, bl.y, '#8a5a2b', 5);
-      SFX.thud(); break;
+      SFX.thud();
+      // barriles XXX y la gran cuba: aguantan unos tiros y revientan
+      if (s.hp > 0 && !s.chain) { s.hp--; s.hit = 6; if (s.hp <= 0) s.chain = 1; }
+      break;
     }
     if (!bl.life) continue;
     if (bl.from === 'p') {
@@ -820,7 +1012,7 @@ function updateBullets() {
       bl.life = 0; hurtPlayer(1);
     }
   }
-  bullets = bullets.filter(b => b.life > 0 && b.x > cam - 20 && b.x < cam + W + 20);
+  bullets = bullets.filter(b => b.life > 0 && b.x > cam - 20 && b.x < cam + W + 20 && b.y > -10);
 }
 
 function updatePickups() {
@@ -921,6 +1113,60 @@ function makeBackground(theme) {
       g.fillStyle = '#0a1812'; for (const tx of [40, 420]) { g.beginPath(); g.arc(tx, 70, 22, 0, 7); g.fill(); g.fillRect(tx - 2, 80, 4, 30); }
     }),
   };
+  if (theme === 'river') return {   // amanecer naranja sobre el río Chicago
+    far: layer(256, (g, w) => {
+      const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#2a1e44'); gr.addColorStop(.55, '#d9704a'); gr.addColorStop(1, '#f7c26a');
+      g.fillStyle = gr; g.fillRect(0, 0, w, H);
+      g.fillStyle = 'rgba(255,220,140,.25)'; g.beginPath(); g.arc(70, 92, 30, 0, 7); g.fill();
+      g.fillStyle = '#ffe08a'; g.beginPath(); g.arc(70, 92, 18, 0, 7); g.fill();
+      g.fillStyle = 'rgba(120,50,70,.55)'; for (let i = 0; i < 5; i++) g.fillRect(Math.floor(r() * w), Math.floor(r() * 50 + 20), Math.floor(r() * 50 + 30), 3);
+      skyline(g, w, r, 104, 18, 50, '#5a2f44', '#ffd27a', .05);
+    }),
+    mid: layer(512, (g, w) => {
+      g.fillStyle = '#3a2238';
+      for (const cx of [40, 150, 300, 420]) {                        // chimeneas con humo
+        g.fillRect(cx, 52, 8, 60);
+        g.fillStyle = 'rgba(90,70,90,.5)'; for (let k = 0; k < 6; k++) g.fillRect(cx - 4 + k * 3, 44 - k * 5, 8 + k, 4);
+        g.fillStyle = '#3a2238';
+      }
+      g.fillRect(200, 86, 90, 4); g.fillRect(205, 66, 4, 24); g.fillRect(281, 66, 4, 24);   // puente basculante
+      g.beginPath(); g.moveTo(209, 66); g.lineTo(245, 50); g.lineTo(245, 54); g.lineTo(209, 70); g.fill();
+    }),
+  };
+  if (theme === 'warehouse') return {   // interior del almacén Moretti
+    far: layer(256, (g, w) => {
+      g.fillStyle = '#1e1410'; g.fillRect(0, 0, w, H);
+      for (let x = 0; x < w; x += 16) { g.fillStyle = x % 32 ? '#2a1c14' : '#241810'; g.fillRect(x, 0, 15, H); }   // tablas
+      g.fillStyle = '#120c08'; g.fillRect(0, 14, w, 4); g.fillRect(0, 40, w, 2);
+    }),
+    mid: layer(512, (g, w) => {
+      for (let sx = 10; sx < w; sx += 128) {                        // estanterías con botellas
+        g.fillStyle = '#3a2618'; g.fillRect(sx, 48, 96, 3); g.fillRect(sx, 72, 96, 3); g.fillRect(sx, 96, 96, 3);
+        g.fillRect(sx, 44, 3, 80); g.fillRect(sx + 93, 44, 3, 80);
+        for (const sy of [40, 64, 88]) for (let bx = sx + 6; bx < sx + 90; bx += 6) {
+          g.fillStyle = r() < .5 ? '#7a4a1a' : '#4a6a3a'; g.fillRect(bx, sy, 3, 8); g.fillRect(bx + 1, sy - 2, 1, 2);
+        }
+      }
+    }),
+  };
+  if (theme === 'cemetery') return {    // atardecer sobre Mount Olivet
+    far: layer(256, (g, w) => {
+      const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#3a1e4a'); gr.addColorStop(.5, '#e0705a'); gr.addColorStop(.8, '#ffb46a'); gr.addColorStop(1, '#ffd890');
+      g.fillStyle = gr; g.fillRect(0, 0, w, H);
+      g.fillStyle = '#ffe2a0'; g.beginPath(); g.arc(180, 104, 22, Math.PI, 0); g.fill();
+      g.fillStyle = 'rgba(255,170,190,.45)'; for (let i = 0; i < 6; i++) g.fillRect(Math.floor(r() * w), Math.floor(r() * 60 + 14), Math.floor(r() * 60 + 30), 2);
+      skyline(g, w, r, 106, 6, 26, '#6a3a4a', '#ffd27a', .03);
+    }),
+    mid: layer(512, (g, w) => {
+      for (let x = 10; x < w; x += 46 + Math.floor(r() * 30)) {      // cipreses
+        const hh = 34 + Math.floor(r() * 20);
+        g.fillStyle = '#2a1828'; g.beginPath(); g.ellipse(x, GROUND - hh / 2, 5, hh / 2, 0, 0, 7); g.fill();
+      }
+      g.fillStyle = '#3a2232';                                       // mausoleo
+      g.fillRect(240, 82, 40, 42); g.beginPath(); g.moveTo(236, 82); g.lineTo(260, 70); g.lineTo(284, 82); g.fill();
+      g.fillStyle = '#1e121c'; g.fillRect(254, 100, 12, 24);
+    }),
+  };
 }
 const RAIN = Array.from({ length: 70 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: rand(2.5, 4) }));
 function updateRain() { for (const d of RAIN) { d.y += d.s; d.x -= d.s * .3; if (d.y > H) { d.y = -4; d.x = Math.random() * (W + 40); } } }
@@ -939,6 +1185,20 @@ function drawGround(theme) {
     ctx.fillStyle = '#1c1a24'; ctx.fillRect(0, GROUND + 12, W, 2);
     ctx.fillStyle = '#16141c'; ctx.fillRect(0, GROUND + 14, W, H - GROUND - 14);
     ctx.fillStyle = 'rgba(242,179,61,.18)'; for (let x = -(cam % 40); x < W; x += 40) ctx.fillRect(Math.floor(x), GROUND + 16, 6, 3); // reflejos
+  } else if (theme === 'river') {
+    ctx.fillStyle = '#4a3a3a'; ctx.fillRect(0, GROUND, W, 5);               // muelle
+    ctx.fillStyle = '#2c3e57'; ctx.fillRect(0, GROUND + 5, W, H - GROUND - 5); // agua
+    ctx.fillStyle = 'rgba(255,200,120,.45)';
+    for (let x = -((cam * 1.2) % 24); x < W; x += 24) ctx.fillRect(Math.floor(x + (frame >> 3) % 6), GROUND + 9 + (Math.floor(x) & 3), 8, 1);
+  } else if (theme === 'warehouse') {
+    ctx.fillStyle = '#3a3634'; ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillStyle = '#5a5450'; ctx.fillRect(0, GROUND, W, 1);
+    ctx.fillStyle = '#2a2624'; for (let x = -(cam % 40); x < W; x += 40) ctx.fillRect(Math.floor(x), GROUND, 1, H - GROUND);
+    if (vatDown) { ctx.fillStyle = `rgba(255,140,40,${.25 + .1 * Math.sin(frame / 4)})`; ctx.fillRect(0, GROUND, W, H - GROUND); } // whisky en llamas
+  } else if (theme === 'cemetery') {
+    ctx.fillStyle = '#3a4a2a'; ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillStyle = '#56603a'; ctx.fillRect(0, GROUND, W, 1);
+    ctx.fillStyle = '#8a7a5a'; ctx.fillRect(0, GROUND + 6, W, 5);           // sendero
   } else {
     ctx.fillStyle = '#1e3a28'; ctx.fillRect(0, GROUND, W, 2);
     for (let y = GROUND + 2; y < H; y += 6) for (let x = -((cam + (y % 12 ? 0 : 8)) % 16); x < W; x += 16) {
@@ -947,6 +1207,39 @@ function drawGround(theme) {
   }
 }
 function drawDecor(theme) {
+  if (theme === 'warehouse') {           // lámparas colgantes
+    for (let wx = 80; wx < lv.len; wx += 160) {
+      const x = Math.round(wx - cam);
+      if (x < -40 || x > W + 40) continue;
+      ctx.fillStyle = 'rgba(255,210,122,.09)';
+      ctx.beginPath(); ctx.moveTo(x - 3, 30); ctx.lineTo(x + 5, 30); ctx.lineTo(x + 30, GROUND); ctx.lineTo(x - 28, GROUND); ctx.fill();
+      ctx.fillStyle = '#120c08'; ctx.fillRect(x, 0, 1, 26);
+      ctx.fillStyle = '#3a3a30'; ctx.fillRect(x - 4, 26, 10, 4);
+      ctx.fillStyle = '#ffd27a'; ctx.fillRect(x - 1, 30, 4, 2);
+    }
+    return;
+  }
+  if (theme === 'cemetery') {            // lápidas y la tumba de Sal
+    for (let wx = 40; wx < lv.len; wx += 58) {
+      if (Math.abs(wx - GRAVE_X) < 40) continue;
+      const x = Math.round(wx - cam), hh = 10 + (wx * 7) % 8;
+      if (x < -20 || x > W + 20) continue;
+      ctx.fillStyle = '#5a5262'; ctx.fillRect(x, GROUND - hh, 8, hh); ctx.fillRect(x + 1, GROUND - hh - 1, 6, 1);
+      ctx.fillStyle = '#3e3846'; ctx.fillRect(x + 3, GROUND - hh + 3, 2, 5); ctx.fillRect(x + 2, GROUND - hh + 4, 4, 1);
+    }
+    const gx = Math.round(GRAVE_X - cam);
+    ctx.fillStyle = '#7a7286'; ctx.fillRect(gx, GROUND - 24, 18, 24); ctx.fillRect(gx + 2, GROUND - 26, 14, 2); ctx.fillRect(gx + 5, GROUND - 27, 8, 1);
+    ctx.fillStyle = '#4a4456'; ctx.fillRect(gx + 8, GROUND - 22, 2, 7); ctx.fillRect(gx + 6, GROUND - 20, 6, 2);
+    text('SAL', gx + 9, GROUND - 13, '#2a2432', 5, 'center');
+    ctx.fillStyle = '#c8323a'; ctx.fillRect(gx - 4, GROUND - 3, 2, 3); ctx.fillRect(gx + 20, GROUND - 3, 2, 3);   // flores
+    ctx.fillStyle = '#f2b33d'; ctx.fillRect(gx - 3, GROUND - 4, 2, 2); ctx.fillRect(gx + 21, GROUND - 4, 2, 2);
+    if (atGrave) {                       // el sombrero de Tony sobre la lápida
+      ctx.fillStyle = '#6b4a2f'; ctx.fillRect(gx + 4, GROUND - 31, 10, 3); ctx.fillRect(gx + 2, GROUND - 28, 14, 2);
+      ctx.fillStyle = '#1b1414'; ctx.fillRect(gx + 4, GROUND - 29, 10, 1);
+    }
+    return;
+  }
+  if (theme === 'river') return;
   // farolas cada 200 px
   for (let wx = 100; wx < lv.len; wx += 200) {
     const x = Math.round(wx - cam);
@@ -989,7 +1282,7 @@ function rel(o, rx, ry, w, h, col) {
   const X = o.face > 0 ? o.x + rx : o.x + o.w - rx - w;
   ctx.fillStyle = col; ctx.fillRect(Math.round(X - cam), Math.round(o.y + ry), w, h);
 }
-function drawMan(o, tommy) {
+function drawMan(o, tommy, unarmed = false) {
   if (o.dead) return drawDeadMan(o);
   let fr = 'stand';
   if (o.crouch) fr = 'crouch';
@@ -1003,6 +1296,7 @@ function drawMan(o, tommy) {
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   }
   const gy = o.crouch ? 3 : 6;
+  if (unarmed) return;
   if (tommy) { rel(o, 6, gy, 8, 1, '#2a2a30'); rel(o, 7, gy + 1, 3, 2, '#2a2a30'); rel(o, 4, gy + 1, 3, 1, '#7a4a24'); }
   else { rel(o, 8, gy, 4, 1, '#2a2a30'); rel(o, 8, gy + 1, 1, 1, '#2a2a30'); }
   if (o.flash > 0) rel(o, tommy ? 14 : 12, gy - 1, 2, 3, '#ffe27a');
@@ -1018,7 +1312,7 @@ function drawDeadMan(o) {
   if (t > 140) return;
   const img = o.spr.stand[0];
   ctx.save();
-  ctx.translate(Math.round(o.x - cam) + o.w / 2, GROUND - img.width / 2);
+  ctx.translate(Math.round(o.x - cam) + o.w / 2, Math.round(o.y + o.h) - img.width / 2);   // cae donde estaba (suelo o techo)
   ctx.rotate(o.face > 0 ? -Math.PI / 2 : Math.PI / 2);
   ctx.drawImage(img, -img.width / 2, -img.height / 2);
   ctx.restore();
@@ -1040,6 +1334,31 @@ function drawBoss(b) {
 function drawSolid(s) {
   const x = Math.round(s.x - cam);
   if (x + s.w < 0 || x > W) return;
+  if (s.k === 'building') {              // edificio de ladrillo junto al río
+    ctx.fillStyle = '#5a3030'; ctx.fillRect(x, s.y, s.w, s.h);
+    ctx.fillStyle = '#2a1a1a'; ctx.fillRect(x - 1, s.y, s.w + 2, 2);
+    for (let wy = s.y + 6; wy < s.y + s.h - 4; wy += 8)
+      for (let wx = x + 4; wx < x + s.w - 4; wx += 8) { ctx.fillStyle = ((wx + wy) >> 3) % 3 ? '#2a1820' : '#f2b33d'; ctx.fillRect(wx, wy, 3, 4); }
+    return;
+  }
+  if (s.k === 'whisky') {                // barril XXX que revienta
+    ctx.fillStyle = s.hit > 0 ? '#ffffff' : '#7a3a1a'; ctx.fillRect(x, s.y, s.w, s.h);
+    ctx.fillStyle = '#9a5a2a'; ctx.fillRect(x + 2, s.y, 2, s.h);
+    ctx.fillStyle = '#26222a'; ctx.fillRect(x, s.y + 2, s.w, 1); ctx.fillRect(x, s.y + s.h - 3, s.w, 1);
+    ctx.fillStyle = '#f3e9d2'; for (let k = 0; k < 3; k++) { ctx.fillRect(x + 2 + k * 2, s.y + 5, 1, 1); ctx.fillRect(x + 3 + k * 2, s.y + 6, 1, 1); }
+    return;
+  }
+  if (s.k === 'vat') {                   // la gran cuba de cobre
+    const hot = s.hit > 0;
+    ctx.fillStyle = hot ? '#ffd2a0' : '#b87333'; ctx.fillRect(x + 2, s.y + 6, s.w - 4, s.h - 6);
+    ctx.fillRect(x + 6, s.y + 2, s.w - 12, 4); ctx.fillRect(x + 12, s.y, s.w - 24, 2);
+    ctx.fillStyle = '#7a4a20'; for (let y = s.y + 12; y < s.y + s.h; y += 12) ctx.fillRect(x + 2, y, s.w - 4, 2);
+    ctx.fillStyle = '#d8945a'; ctx.fillRect(x + 6, s.y + 8, 3, s.h - 12);
+    ctx.fillStyle = '#f3e9d2'; ctx.fillRect(x + 10, s.y + 24, s.w - 20, 10);
+    text('XXX', x + s.w / 2, s.y + 26, '#7a1a1a', 5, 'center');
+    ctx.fillStyle = '#3a3a3a'; ctx.fillRect(x + s.w - 2, s.y + 30, 8, 3);   // caño
+    return;
+  }
   if (s.k === 'barrel') {
     ctx.fillStyle = '#6b3a20'; ctx.fillRect(x, s.y, s.w, s.h);
     ctx.fillStyle = '#8a4e2a'; ctx.fillRect(x + 2, s.y, 2, s.h);
@@ -1066,7 +1385,36 @@ function text(s, x, y, col, size = 8, align = 'left') {
   ctx.fillStyle = col; ctx.fillText(s, x, y);
 }
 
+function drawHeli(p) {
+  if (!p.dead && p.inv > 0 && (p.inv >> 2) % 2) return;
+  const x = Math.round(p.x - cam), y = Math.round(p.y);
+  ctx.save();
+  if (p.dead) { ctx.translate(x + 10, y + 6); ctx.rotate(Math.min(p.deadT, 40) * .03); ctx.translate(-x - 10, -y - 6); }
+  ctx.fillStyle = '#4a6a3a'; ctx.fillRect(x + 2, y + 3, 15, 7); ctx.fillRect(x + 17, y + 4, 3, 5);   // cuerpo
+  ctx.fillStyle = '#35502a'; ctx.fillRect(x + 2, y + 8, 18, 2);
+  ctx.fillStyle = '#4a6a3a'; ctx.fillRect(x - 8, y + 5, 11, 2);                                        // cola
+  ctx.fillStyle = '#9a9a9a'; ctx.fillRect(x - 9, y + 2 + ((frame >> 1) % 2) * 3, 2, 4);              // rotor de cola
+  ctx.fillStyle = '#9fd8e8'; ctx.fillRect(x + 12, y + 4, 6, 3);                                        // cabina
+  ctx.fillStyle = '#e8b48a'; ctx.fillRect(x + 14, y + 5, 2, 2);                                        // Tony
+  ctx.fillStyle = '#6b4a2f'; ctx.fillRect(x + 13, y + 4, 4, 1);
+  ctx.fillStyle = '#1b1b1b'; ctx.fillRect(x + 3, y + 11, 15, 1); ctx.fillRect(x + 6, y + 10, 1, 1); ctx.fillRect(x + 14, y + 10, 1, 1); // patines
+  ctx.fillRect(x + 9, y, 1, 3);
+  ctx.fillStyle = '#d8d8d8'; if ((frame >> 1) % 2) ctx.fillRect(x - 4, y - 1, 28, 1); else ctx.fillRect(x + 2, y - 1, 16, 1);  // aspas
+  ctx.fillStyle = '#2a2a30'; ctx.fillRect(x + 20, y + 6, 3, 1); ctx.fillRect(x + 16, y + 10, 2, 2);
+  if (p.flash > 0) { ctx.fillStyle = '#ffe27a'; ctx.fillRect(x + 23, y + 5, 2, 3); ctx.fillRect(x + 17, y + 12, 2, 2); }
+  ctx.restore();
+}
+function drawTank(e) {                    // torre de whisky sobre el techo
+  if (e.dead) return;
+  const x = Math.round(e.x - cam), y = Math.round(e.y);
+  ctx.fillStyle = '#2a1a10'; ctx.fillRect(x + 1, y + 10, 2, 8); ctx.fillRect(x + 11, y + 10, 2, 8); ctx.fillRect(x + 1, y + 14, 12, 1);
+  ctx.fillStyle = e.hurt > 0 ? '#ffffff' : '#8a5a2b'; ctx.fillRect(x, y + 2, 14, 9);
+  ctx.fillStyle = '#5a3a1c'; ctx.fillRect(x + 4, y, 6, 2); ctx.fillRect(x, y + 4, 14, 1); ctx.fillRect(x, y + 8, 14, 1);
+  ctx.fillStyle = '#f3e9d2'; for (let k = 0; k < 3; k++) { ctx.fillRect(x + 3 + k * 3, y + 5, 1, 1); ctx.fillRect(x + 4 + k * 3, y + 6, 1, 1); }
+}
+
 function draw() {
+  if (state === 'finale' || (state === 'end' && finaleT > 0)) { drawFinale(); return; }   // la luna queda de fondo en el fin
   ctx.save();
   if (shake > 0) ctx.translate(Math.round(rand(-2, 2)), Math.round(rand(-1, 1)));
   const fo = Math.floor((cam * .15) % 256), mo = Math.floor((cam * .45) % 512);
@@ -1077,10 +1425,15 @@ function draw() {
   solids.forEach(drawSolid);
   pickups.forEach(drawPickup);
   if (state !== 'title') {
-    enemies.forEach(e => drawMan(e, e.kind === 'heavy'));
+    enemies.forEach(e => e.kind === 'tank' ? drawTank(e) : drawMan(e, e.kind === 'heavy' || e.kind === 'gunner'));
     if (boss) drawBoss(boss);
-    if (player.dead) drawDeadMan({ ...player, deadT: Math.min(player.deadT, 90) });
-    else if (!(player.inv > 0 && (player.inv >> 2) % 2)) drawMan(player, player.ammo > 0);
+    if (player.heli) drawHeli(player);
+    else if (player.dead) drawDeadMan({ ...player, deadT: Math.min(player.deadT, 90) });
+    else if (!(player.inv > 0 && (player.inv >> 2) % 2)) drawMan(player, player.ammo > 0, lv.mode === 'walk');
+  }
+  for (const b of booms) {                // onda de la explosión
+    ctx.fillStyle = `rgba(255,${200 - b.t * 6},90,${.55 - b.t * .03})`;
+    ctx.beginPath(); ctx.arc(Math.round(b.x - cam), Math.round(b.y), b.r * (.3 + b.t / 24), 0, 7); ctx.fill();
   }
   for (const b of bullets) {
     const x = Math.round(b.x - cam), y = Math.round(b.y);
@@ -1089,8 +1442,10 @@ function draw() {
     ctx.fillStyle = b.from === 'p' ? '#ffe27a' : '#ff6a4a'; ctx.fillRect(x, y, b.w, b.h);
   }
   for (const q of parts) { ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x - cam), Math.round(q.y), 1, 1); }
-  ctx.fillStyle = 'rgba(150,170,215,.45)';
-  for (const d of RAIN) ctx.fillRect(Math.round(d.x), Math.round(d.y), 1, 3);
+  if (lv.theme === 'docks' || lv.theme === 'club' || lv.theme === 'mansion') {   // la lluvia, solo de noche
+    ctx.fillStyle = 'rgba(150,170,215,.45)';
+    for (const d of RAIN) ctx.fillRect(Math.round(d.x), Math.round(d.y), 1, 3);
+  }
   for (const t of texts) text(t.s, Math.round(t.x - cam), Math.round(t.y), t.col, 5, 'center');
   ctx.restore();
   if (flash > 0) { ctx.fillStyle = `rgba(230,225,255,${flash / 10})`; ctx.fillRect(0, 0, W, H); }
@@ -1110,19 +1465,140 @@ function drawHud() {
     ctx.fillStyle = '#3a1820'; ctx.fillRect(x, 26, w, 3);
     ctx.fillStyle = boss.hp <= boss.max / 2 ? '#ff5a3a' : '#c8323a'; ctx.fillRect(x, 26, Math.ceil(w * boss.hp / boss.max), 3);
   }
+  const vat = solids.find(s => s.k === 'vat');
+  if (vat && vat.x - cam < W) {
+    const w = 120, x = (W - w) / 2;
+    text('GRAN CUBA', W / 2, 18, '#f3e9d2', 5, 'center');
+    ctx.fillStyle = '#000'; ctx.fillRect(x - 1, 25, w + 2, 5);
+    ctx.fillStyle = '#3a2410'; ctx.fillRect(x, 26, w, 3);
+    ctx.fillStyle = '#d8945a'; ctx.fillRect(x, 26, Math.ceil(w * vat.hp / vat.max), 3);
+  }
   if (exitOpen && state === 'play' && frame % 40 < 28) text('SIGUE ▶', W - 8, 64, '#f2b33d', 8, 'right');
   if (cardT > 0) {
     const a = Math.min(1, cardT / 30, (170 - cardT) / 20 + .2);
     ctx.globalAlpha = a;
     ctx.fillStyle = 'rgba(8,6,12,.8)'; ctx.fillRect(0, 44, W, 42);
     ctx.fillStyle = '#f2b33d'; ctx.fillRect(0, 44, W, 1); ctx.fillRect(0, 85, W, 1);
-    text('CAPÍTULO ' + (chapter + 1), W / 2, 50, '#f2b33d', 5, 'center');
+    text(lv.label || 'CAPÍTULO ' + (chapter + 1), W / 2, 50, '#f2b33d', 5, 'center');
     text(lv.name, W / 2, 60, '#f3e9d2', 12, 'center');
-    if (chapter === 0) text('▼ AGÁCHATE   A SALTA   B DISPARA', W / 2, 77, '#8a8299', 5, 'center');
+    if (lv.hint) text(lv.hint, W / 2, 77, '#8a8299', 5, 'center');
+    else if (chapter === 0) text('▼ AGÁCHATE   A SALTA   B DISPARA', W / 2, 77, '#8a8299', 5, 'center');
     else if (lv.boss) text('LLEGA A LA TERRAZA', W / 2, 77, '#8a8299', 5, 'center');
     else text('ACABA CON TODOS Y SIGUE', W / 2, 77, '#8a8299', 5, 'center');
     ctx.globalAlpha = 1;
   }
+}
+
+// ---------------------------------------------------------------- final: el cohete "Luna 31" despega hacia la luna
+const FINALE_END = 760;
+let finaleStars = [];
+function startFinale() {
+  state = 'finale'; finaleT = 0; parts = [];
+  finaleStars = Array.from({ length: 70 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: rand(.3, 1.6) }));
+  $('pauseBtn').hidden = true;
+  tempo = 100;
+}
+function updateFinale() {
+  finaleT++;
+  if (finaleT === 200) { SFX.rocket(); shake = 40; }
+  if (finaleT >= 150 && finaleT < 460 && finaleT % 2 === 0) {   // humo y fuego del cohete
+    const ry = rocketY(), base = finaleT < 200 ? 0 : 1;
+    parts.push({ x: 150 + rand(-4, 4), y: ry + 40, vx: rand(-1.2, 1.2) * (base ? .5 : 1.5), vy: base ? rand(1.5, 2.5) : rand(-.4, .2), life: rand(20, 40), col: base ? '#ffb24a' : '#d8d0c8', g: 0 });
+  }
+  for (const q of parts) { q.x += q.vx; q.y += q.vy; q.life--; }
+  parts = parts.filter(q => q.life > 0);
+  for (const s of finaleStars) { s.y += finaleT > 300 ? s.s * 2 : 0; if (s.y > H) { s.y = 0; s.x = Math.random() * W; } }
+  if (shake > 0) shake--;
+  if (finaleT >= FINALE_END) endGame();
+}
+function rocketY() {                      // altura del cohete en pantalla
+  if (finaleT < 200) return 70;
+  if (finaleT < 300) return 70 - Math.pow(finaleT - 200, 2) * .004;
+  return 30;
+}
+const mix = (a, b, k) => {               // mezcla dos colores #rrggbb
+  const pa = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), pb = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16));
+  return 'rgb(' + pa.map((v, i) => Math.round(v + (pb[i] - v) * Math.max(0, Math.min(1, k)))).join(',') + ')';
+};
+function drawRocket(x, y, s, flame) {     // cohete de feria plateado con franjas rojas
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.fillStyle = '#c8323a'; ctx.beginPath(); ctx.moveTo(-7, 8); ctx.lineTo(0, -6); ctx.lineTo(7, 8); ctx.fill();   // punta
+  ctx.fillStyle = '#d8dce4'; ctx.fillRect(-7, 8, 14, 30);
+  ctx.fillStyle = '#a8aeba'; ctx.fillRect(4, 8, 3, 30);
+  ctx.fillStyle = '#c8323a'; ctx.fillRect(-7, 26, 14, 3); ctx.fillRect(-7, 33, 14, 2);
+  ctx.fillStyle = '#3a3a48'; ctx.beginPath(); ctx.arc(0, 17, 4, 0, 7); ctx.fill();
+  ctx.fillStyle = '#9fd8e8'; ctx.beginPath(); ctx.arc(0, 17, 3, 0, 7); ctx.fill();
+  if (finaleT > 130) { ctx.fillStyle = '#e8b48a'; ctx.fillRect(-1, 16, 2, 2); ctx.fillStyle = '#6b4a2f'; ctx.fillRect(-2, 15, 4, 1); } // Tony en la ventanilla
+  ctx.fillStyle = '#c8323a';
+  ctx.beginPath(); ctx.moveTo(-7, 30); ctx.lineTo(-13, 42); ctx.lineTo(-7, 38); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(7, 30); ctx.lineTo(13, 42); ctx.lineTo(7, 38); ctx.fill();
+  if (flame) {
+    const f = 6 + (frame % 4) * 2;
+    ctx.fillStyle = '#ffe27a'; ctx.beginPath(); ctx.moveTo(-5, 38); ctx.lineTo(0, 38 + f + 6); ctx.lineTo(5, 38); ctx.fill();
+    ctx.fillStyle = '#ff6a2a'; ctx.beginPath(); ctx.moveTo(-3, 38); ctx.lineTo(0, 38 + f); ctx.lineTo(3, 38); ctx.fill();
+  }
+  ctx.restore();
+}
+function drawFinale() {
+  const t = finaleT;
+  ctx.save();
+  if (shake > 0) ctx.translate(Math.round(rand(-2, 2)), Math.round(rand(-2, 2)));
+  // el cielo pasa del atardecer a la noche y al espacio
+  const k = t < 200 ? 0 : (t - 200) / 200;
+  const gr = ctx.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, mix('#3a1e4a', '#05040c', k)); gr.addColorStop(.6, mix('#e0705a', '#0a0818', k)); gr.addColorStop(1, mix('#ffd890', '#120e24', k));
+  ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = Math.min(1, k * 1.5);
+  for (const s of finaleStars) { ctx.fillStyle = s.s > 1 ? '#ffffff' : '#9aa0c8'; ctx.fillRect(Math.round(s.x), Math.round(s.y), 1, s.s > 1.2 && t > 300 ? 3 : 1); }
+  ctx.globalAlpha = 1;
+  // la luna crece a medida que el cohete se acerca
+  if (t > 300) {
+    const mk = Math.min(1, (t - 300) / 330), mr = 6 + mk * 54, my = 16 + mk * 40;
+    ctx.fillStyle = 'rgba(243,233,210,.15)'; ctx.beginPath(); ctx.arc(150, my, mr + 6, 0, 7); ctx.fill();
+    ctx.fillStyle = '#efe4c4'; ctx.beginPath(); ctx.arc(150, my, mr, 0, 7); ctx.fill();
+    ctx.fillStyle = '#d6c9a4';
+    for (const [cx, cy, cr] of [[-.4, -.3, .18], [.3, .2, .12], [-.1, .45, .1], [.45, -.35, .08]]) { ctx.beginPath(); ctx.arc(150 + cx * mr, my + cy * mr, cr * mr, 0, 7); ctx.fill(); }
+  }
+  // el suelo de la feria se aleja hacia abajo
+  const groundY = t < 200 ? 0 : Math.min(200, (t - 200) * 1.4);
+  ctx.save(); ctx.translate(0, groundY);
+  ctx.fillStyle = '#ffe2a0'; ctx.beginPath(); ctx.arc(60, 112, 18, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#2a1828'; for (const cx of [20, 210, 236]) { ctx.beginPath(); ctx.ellipse(cx, 96, 5, 18, 0, 0, 7); ctx.fill(); }
+  ctx.fillStyle = '#3a4a2a'; ctx.fillRect(0, 112, W, H - 112);
+  ctx.fillStyle = '#5a4a3a'; ctx.fillRect(132, 108, 36, 4);                 // plataforma
+  ctx.fillStyle = '#c8323a'; ctx.fillRect(176, 80, 2, 32);                  // cartel de la atracción
+  ctx.fillStyle = '#f3e9d2'; ctx.fillRect(170, 72, 40, 12);
+  ctx.font = '5px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = '#c8323a'; ctx.fillText('LUNA 31', 190, 76);
+  if (t < 130) {                         // Tony camina hasta el cohete
+    const px = 30 + Math.min(1, t / 120) * 104;
+    const img = SPR.tony[(t >> 3) % 2 ? 'walk1' : 'walk2'][0];
+    ctx.drawImage(img, Math.round(px), 96);
+  }
+  ctx.restore();
+  for (const q of parts) { ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); }
+  // el cohete
+  let rx = 150, ry = rocketY(), rs = 1;
+  if (t > 460) { const kk = Math.min(1, (t - 460) / 180); ry = 30 + kk * 20; rs = 1 - kk * .85; }   // se aleja hacia la luna
+  if (t < 660) drawRocket(rx, ry, rs, t >= 190 && t < 640);
+  if (t >= 640) {                        // banderita en la luna
+    ctx.fillStyle = '#5a5a5a'; ctx.fillRect(150, 44, 1, 10);
+    ctx.fillStyle = '#c8323a'; ctx.fillRect(151, 44, 6, 4);
+  }
+  ctx.restore();
+  // textos
+  if (t > 320 && t < 600) text('RUMBO A LA LUNA', W / 2, H - 22, '#f3e9d2', 8, 'center');
+  if (t >= 660) {
+    ctx.globalAlpha = Math.min(1, (t - 660) / 40);
+    text('FIN', W / 2, H / 2 + 22, '#f2b33d', 16, 'center');
+    ctx.globalAlpha = 1;
+  }
+}
+function endGame() {
+  state = 'end';
+  try { localStorage.removeItem('cdp-chapter'); } catch (e) {}
+  $('endScore').textContent = 'Botín recuperado: $' + score + '. Tony y Sal ya están en la luna. Gracias por jugar.';
+  show('end');
 }
 
 // ---------------------------------------------------------------- diálogos
@@ -1330,12 +1806,7 @@ function finishChapter() {
   SFX.win();
   say(lv.outro, () => {
     if (chapter + 1 < LEVELS.length) startChapter(chapter + 1);
-    else {
-      state = 'end';
-      try { localStorage.removeItem('cdp-chapter'); } catch (e) {}
-      $('endScore').textContent = 'Botín recuperado: $' + score + '. Gracias por jugar este prototipo.';
-      show('end');
-    }
+    else endGame();
   });
 }
 function togglePause() {
@@ -1347,10 +1818,11 @@ function toTitle() {
 }
 function refreshContinue() {
   let c = 0; try { c = +localStorage.getItem('cdp-chapter') || 0; } catch (e) {}
-  const h = /^#cap([1-3])$/.exec(location.hash);   // enlace directo a un capítulo: #cap2, #cap3
+  const h = /^#cap([1-6])$/.exec(location.hash);   // enlace directo a un capítulo: #cap2 ... #cap6 (epílogo)
   if (h) c = +h[1] - 1;
+  c = Math.min(c, LEVELS.length - 1);
   $('bCont').hidden = c < 1;
-  $('bCont').textContent = 'CONTINUAR · CAP. ' + (c + 1);
+  $('bCont').textContent = 'CONTINUAR · ' + (LEVELS[c].label || 'CAP. ' + (c + 1));
   $('bCont').dataset.ch = c;
 }
 // pantalla completa: solo se ofrece donde el navegador la permite (Android/escritorio; iPhone no)
