@@ -199,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 3 capítulos · Versión 9</p>
+    <p class="fine">Prototipo · 3 capítulos · Versión 10</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -235,7 +235,10 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
 <script>
 // si algo falla en un celular, el error queda escrito en pantalla para poder diagnosticarlo
 (() => {
-  const report = msg => { const el = document.getElementById('err'); if (!el) return; el.hidden = false; el.textContent = 'Error: ' + msg; };
+  const report = msg => {
+    if (/ResizeObserver loop/i.test(msg)) return;   // aviso interno de Chrome al cambiar de tamaño: inofensivo
+    const el = document.getElementById('err'); if (!el) return; el.hidden = false; el.textContent = 'Error: ' + msg;
+  };
   addEventListener('error', e => report(e.message + (e.lineno ? ' (línea ' + e.lineno + ')' : '')));
   addEventListener('unhandledrejection', e => report(String(e.reason && e.reason.message || e.reason)));
 })();
@@ -1407,8 +1410,11 @@ function fit() {
   screenEl.style.width = Math.floor(W * s) + 'px';
   screenEl.style.height = Math.floor(H * s) + 'px';
 }
-new ResizeObserver(fit).observe(stage);
-addEventListener('resize', fit);
+// acomodar en el siguiente cuadro (no dentro del aviso de cambio de tamaño) evita el "ResizeObserver loop" de Chrome
+let fitQueued = false;
+const queueFit = () => { if (fitQueued) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; fit(); }); };
+new ResizeObserver(queueFit).observe(stage);
+addEventListener('resize', queueFit);
 
 // ---------------------------------------------------------------- bucle
 setSound(sound);
