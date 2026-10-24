@@ -368,7 +368,8 @@ const LEVELS = [
       T('TONY', 'Muelle 9. Aquí descarga Castellano su whisky canadiense cada viernes.'),
       T('TONY', 'Si le reviento el cargamento, va a tener que salir de su madriguera.'),
       T('NARRADOR', 'Agáchate (▼) para esquivar las balas altas. Salta (A) sobre las balas bajas.'),
-      T('NARRADOR', 'Cuando un matón va a disparar, verás un "!" sobre su sombrero.'),
+      T('NARRADOR', 'Antes de disparar, el matón muestra un "!": amarillo si tira alto (agáchate), rojo si tira bajo (salta).'),
+      T('NARRADOR', 'Ellos también se agachan para esquivarte. Agáchate tú para darles abajo.'),
       T('MATÓN', '¡Es Russo! ¡El jefe paga mil verdes por su sombrero!'),
     ],
     outro: [
@@ -540,7 +541,7 @@ function newMan(x, kind) {
   const low = kind === 'low';
   return { x, y: GROUND - (low ? 8 : 16), w: 8, h: low ? 8 : 16, vx: 0, vy: 0, face: -1, onGround: true, anim: 0,
     kind, spr: SPR[kind], crouch: low, hp: kind === 'heavy' ? 4 : 2, t: 0, warn: 0, active: false, dead: false,
-    deadT: 0, hurt: 0, flash: 0, burst: 0, bt: 0 };
+    deadT: 0, hurt: 0, flash: 0, burst: 0, bt: 0, duck: 0, duckIn: 0, stand: 0, shotLow: low };
 }
 function loadChapter(i) {
   chapter = i; lv = LEVELS[i];
@@ -637,6 +638,7 @@ function update() {
       const speed = 4;   // las balas siempre van rectas: sin apuntado automático
       if (p.ammo > 0) { fire(p, 'p', y, p.face * speed); p.ammo--; p.cool = 6; SFX.tommy(); }
       else { fire(p, 'p', y, p.face * speed); p.cool = 18; SFX.shot(); }
+      enemiesReact(y);
     }
     p.vy = Math.min(p.vy + 0.25, 5);
     moveX(p, p.vx); moveY(p, p.vy);
@@ -686,6 +688,19 @@ function update() {
   }
 }
 
+// Al oír un disparo alto que viene hacia ellos, los matones a veces se agachan para esquivarlo.
+function enemiesReact(by) {
+  if (by + 2 > GROUND - 8) return;               // un tiro bajo les da igual agachados
+  for (const e of enemies) {
+    if (e.dead || !e.active || e.kind === 'low' || e.crouch || e.warn > 0 || e.burst > 0 || e.stand > 0) continue;
+    const dx = e.x - player.x;
+    if (Math.sign(dx) !== player.face || Math.abs(dx) < 30 || Math.abs(dx) > 170) continue;
+    if (by + 2 <= e.y || by >= e.y + e.h) continue;   // esa bala no le iba a dar
+    if (Math.random() < (e.kind === 'heavy' ? .25 : .4)) e.duckIn = Math.floor(rand(5, 11));
+  }
+}
+function duck(e, frames) { setCrouch(e, true); e.duck = frames; }
+
 function updateEnemies() {
   const p = player;
   for (const e of enemies) {
@@ -697,7 +712,15 @@ function updateEnemies() {
     const dx = (p.x + 4) - (e.x + 4);
     e.face = dx > 0 ? 1 : -1;
     e.vx = 0;
-    if (e.kind !== 'low') {
+    // agacharse: para esquivar, para cubrirse un rato, y volver a pararse (con un mínimo de tiempo parado)
+    if (e.kind !== 'low' && e.onGround) {
+      const busy = e.warn > 0 || e.burst > 0;
+      if (e.stand > 0) e.stand--;
+      if (e.duckIn > 0 && --e.duckIn === 0 && !e.crouch && !busy) duck(e, Math.floor(rand(40, 70)));
+      if (!e.crouch && !busy && e.stand <= 0 && Math.random() < 0.004) duck(e, Math.floor(rand(50, 90)));
+      if (e.crouch && !busy && e.duck > 0 && --e.duck <= 0) { setCrouch(e, false); e.stand = Math.floor(rand(50, 80)); }
+    }
+    if (e.kind !== 'low' && !e.crouch) {
       const ad = Math.abs(dx);
       if (ad > 96) e.vx = 0.45 * e.face;
       else if (ad < 44) e.vx = -0.35 * e.face;
@@ -709,7 +732,12 @@ function updateEnemies() {
     const onScreen = e.x > cam - 4 && e.x < cam + W - 4;
     if (!onScreen || p.dead) continue;
     e.t--;
-    if (e.t === 26) { e.warn = 26; SFX.warn(); }
+    if (e.t === 26) {
+      // decide si dispara alto (parado) o bajo (agachado); el color del "!" lo anuncia
+      e.shotLow = e.crouch || Math.random() < (e.kind === 'heavy' ? .25 : .3);
+      if (e.kind !== 'low' && e.onGround) { setCrouch(e, e.shotLow); e.duck = e.shotLow ? 70 : 0; }
+      e.warn = 26; SFX.warn();
+    }
     if (e.warn > 0) e.warn--;
     if (e.t <= 0) {
       e.burst = e.kind === 'heavy' ? 3 : 1; e.bt = 0;
@@ -977,7 +1005,8 @@ function drawMan(o, tommy) {
   else { rel(o, 8, gy, 4, 1, '#2a2a30'); rel(o, 8, gy + 1, 1, 1, '#2a2a30'); }
   if (o.flash > 0) rel(o, tommy ? 14 : 12, gy - 1, 2, 3, '#ffe27a');
   if (o.warn > 0 && (o.warn >> 2) % 2 === 0) {
-    ctx.fillStyle = '#f2b33d'; const x = Math.round(o.x - cam) + 3, y = Math.round(o.y) - 9;
+    // amarillo = tiro alto (agáchate), rojo = tiro bajo (salta)
+    ctx.fillStyle = o.shotLow ? '#ff4a3a' : '#f2b33d'; const x = Math.round(o.x - cam) + 3, y = Math.round(o.y) - 9;
     ctx.fillRect(x, y, 2, 5); ctx.fillRect(x, y + 6, 2, 2);
   }
 }
