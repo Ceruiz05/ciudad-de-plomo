@@ -1,9 +1,10 @@
 // Service worker de Ciudad de Plomo: guarda el juego para jugar sin internet.
 // Al publicar una versión nueva del juego, sube el número de CACHE.
-const CACHE = 'plomo-v5';
+const CACHE = 'plomo-v6';
 const SHELL = [
   './',
   './index.html',
+  './press-start-2p.woff2',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
@@ -11,8 +12,13 @@ const SHELL = [
   './apple-touch-icon.png',
 ];
 
+// cache: 'reload' salta la copia que GitHub Pages deja en el navegador (~10 min) y baja la versión real
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
@@ -23,27 +29,47 @@ self.addEventListener('activate', e => {
   );
 });
 
+const json = data => new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
+
+// El juego pregunta "?plomo-check" al abrir: se baja index.html fresco, se compara con la copia
+// guardada y, si cambió, se guarda y se responde { updated: true } para ofrecer "Actualizar".
+async function checkForUpdate() {
+  try {
+    const res = await fetch('./index.html', { cache: 'no-cache' });
+    if (!res.ok) return json({ updated: false });
+    const fresh = await res.text();
+    const hit = await caches.match('./index.html');
+    const old = hit ? await hit.text() : null;
+    if (fresh === old) return json({ updated: false });
+    const cache = await caches.open(CACHE);
+    await cache.put('./index.html', new Response(fresh, { headers: { 'Content-Type': 'text/html; charset=utf-8' } }));
+    return json({ updated: old !== null });
+  } catch (err) {
+    return json({ updated: false, offline: true });
+  }
+}
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // la página: primero la red (para recibir actualizaciones), si no hay internet la copia guardada
-  if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req)
-        .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); return res; })
-        .catch(() => caches.match('./index.html'))
-    );
+  if (url.origin === location.origin && url.searchParams.has('plomo-check')) {
+    e.respondWith(checkForUpdate());
     return;
   }
 
-  // íconos, manifest y la tipografía de Google: primero la copia guardada
-  const cacheable = url.origin === location.origin || /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
-  if (!cacheable) return;
+  // la página: abre al instante con la copia guardada (con señal mala ya no se queda esperando)
+  if (req.mode === 'navigate') {
+    e.respondWith(caches.match('./index.html').then(hit => hit || fetch(req)));
+    return;
+  }
+
+  // tipografía, íconos y manifest: primero la copia guardada
+  if (url.origin !== location.origin) return;
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {
-      if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
     }))
   );

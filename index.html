@@ -8,6 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,9 +18,7 @@
 <body>
 <title>Ciudad de Plomo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>@font-face{font-family:"Press Start 2P";src:url(press-start-2p.woff2) format("woff2");font-display:swap}</style>
 <style>
 /* Layout: arcade cabinet de una pantalla. Retrato: pantalla arriba, mandos abajo. Horizontal: mandos sobre la pantalla. */
 :root{
@@ -200,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 3 capítulos · Juega con el móvil en horizontal o vertical</p>
+    <p class="fine">Prototipo · 3 capítulos · Versión 6</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -1405,12 +1404,34 @@ function loop(now) {
   draw();
   requestAnimationFrame(loop);
 }
-(document.fonts ? document.fonts.load('8px "Press Start 2P"').catch(() => {}) : Promise.resolve()).then(() => requestAnimationFrame(loop));
+// espera la tipografía como mucho 1,5 s: sin señal, el juego arranca igual con la letra de respaldo
+const fontReady = document.fonts ? document.fonts.load('8px "Press Start 2P"').catch(() => {}) : Promise.resolve();
+Promise.race([fontReady, new Promise(r => setTimeout(r, 1500))]).then(() => requestAnimationFrame(loop));
 })();
 </script>
 
+<button id="updBanner" hidden style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:40;
+  font:10px 'Press Start 2P',monospace;padding:12px 14px;background:#f2b33d;color:#1a1208;border:3px solid #000;box-shadow:4px 4px 0 #000;cursor:pointer"></button>
 <script>
-if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  // al abrir y al volver a la app: pregunta si hay version nueva; si la hay, ofrece actualizar
+  const checkUpdate = () => {
+    if (!navigator.serviceWorker.controller) return;
+    fetch('./?plomo-check=' + Date.now()).then(r => r.json()).then(d => {
+      if (!d.updated) return;
+      const b = document.getElementById('updBanner');
+      b.innerHTML = 'VERSI&Oacute;N NUEVA LISTA &middot; TOCA PARA ACTUALIZAR';
+      b.hidden = false;
+      b.onclick = () => location.reload();
+    }).catch(() => {});
+  };
+  addEventListener('load', () => setTimeout(checkUpdate, 800));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+  // cuando se instala un service worker nuevo (cambio de version de cache), recarga una vez sola
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
+}
 </script>
 </body>
 </html>
