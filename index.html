@@ -199,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 5 capítulos y epílogo · Versión 11</p>
+    <p class="fine">Prototipo · 5 capítulos y epílogo · Versión 12</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -223,7 +223,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
   </div>
 
   <div id="end" class="overlay" hidden>
-    <p class="eyebrow">MAR DE LA TRANQUILIDAD · 1931</p>
+    <p class="eyebrow">LADO OSCURO DE LA LUNA · 1931</p>
     <h1>LA DEUDA<br>ESTÁ PAGADA</h1>
     <p class="tag" id="endScore"></p>
     <div class="menu">
@@ -330,6 +330,10 @@ SPR.gunner = SPR.heavy;   // pistoleros de los techos en el río
 const HEART = makeSprite(['.rr.rr.', 'rrrrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'], { r:'#e0424a' });
 const HEART_E = makeSprite(['.rr.rr.', 'r..r..r', 'r.....r', '.r...r.', '..r.r..', '...r...'], { r:'#5a3a48' });
 const CASH = makeSprite(['gggggggg', 'gllggllg', 'glgddglg', 'gllggllg', 'gggggggg'], { g:'#3f9a4f', l:'#9fe0a0', d:'#1f5a2a' });
+// aliens del lado oscuro de la luna (dos cuadros de caminata)
+const ALIEN_TOP = ['....g.....', '....y.....', '...gggg...', '..gggggg..', '.gkkggkkg.', '.gkwggkwg.', '..gggggg..', '...gkkg...', '....gg....', '..gggggg..', '.g.gggg.g.'];
+const ALIEN_PAL = { g: '#7ad65a', k: '#0a0a0a', w: '#e8ffe0', y: '#e8ff6a' };
+const ALIEN = [makeSprite([...ALIEN_TOP, '...g..g...', '..gg..gg..'], ALIEN_PAL), makeSprite([...ALIEN_TOP, '....gg....', '...gg.gg..'], ALIEN_PAL)];
 const TOMMY = makeSprite(['..kkkkkkkk', 'wwkkkk....', 'ww..kk....', '....kk....'], { k:'#2a2a30', w:'#7a4a24' });
 
 // retratos 16x16 para los diálogos
@@ -524,6 +528,8 @@ const SFX = {
   bang()   { noise(0.6, 0.45, 0, 1400); tone(140, 30, 0.5, 'square', 0.18); noise(1.2, 0.15, 0.2, 400); },
   boom()   { noise(0.7, 0.4, 0, 900); tone(110, 28, 0.6, 'square', 0.16); },
   rocket() { noise(3.5, 0.3, 0, 700); tone(60, 220, 3.5, 'sawtooth', 0.08); },
+  ufo()    { tone(300, 900, .6, 'sine', .07); tone(900, 300, .6, 'sine', .07, .6); tone(300, 900, .6, 'sine', .07, 1.2); },
+  eyes()   { tone(1800, 1800, .05, 'square', .02); },
 };
 // línea de bajo "walking" en La menor
 const BASS = [0, null, 3, null, 7, null, 0, -2, -4, null, 0, null, -5, null, -1, null];
@@ -1490,7 +1496,8 @@ function drawHud() {
 }
 
 // ---------------------------------------------------------------- final: el cohete "Luna 31" despega hacia la luna
-const FINALE_END = 760;
+const DARK_START = 790;               // tras el "FIN": el lado oscuro de la luna
+const FINALE_END = DARK_START + 520;
 let finaleStars = [];
 function startFinale() {
   state = 'finale'; finaleT = 0; parts = [];
@@ -1507,7 +1514,11 @@ function updateFinale() {
   }
   for (const q of parts) { q.x += q.vx; q.y += q.vy; q.life--; }
   parts = parts.filter(q => q.life > 0);
-  for (const s of finaleStars) { s.y += finaleT > 300 ? s.s * 2 : 0; if (s.y > H) { s.y = 0; s.x = Math.random() * W; } }
+  if (finaleT < DARK_START) for (const s of finaleStars) { s.y += finaleT > 300 ? s.s * 2 : 0; if (s.y > H) { s.y = 0; s.x = Math.random() * W; } }
+  const u = finaleT - DARK_START;
+  if (u > 0 && u < 120 && u % 30 === 10) SFX.eyes();
+  if (u === 170) SFX.ufo();
+  if (u > 300 && u < 420 && u % 9 === 0) SFX.blip();
   if (shake > 0) shake--;
   if (finaleT >= FINALE_END) endGame();
 }
@@ -1539,8 +1550,63 @@ function drawRocket(x, y, s, flame) {     // cohete de feria plateado con franja
   }
   ctx.restore();
 }
+// Escena sorpresa: en el lado oscuro de la luna alguien vio llegar el cohete... CONTINUARÁ
+function drawDarkSide(u) {
+  ctx.fillStyle = '#020208'; ctx.fillRect(0, 0, W, H);
+  for (const s of finaleStars) { ctx.fillStyle = s.s > 1 ? '#ffffff' : '#6a70a0'; ctx.fillRect(Math.round(s.x), Math.round(s.y * .6), 1, 1); }
+  ctx.fillStyle = '#3a6ad0'; ctx.beginPath(); ctx.arc(40, 26, 10, 0, 7); ctx.fill();        // la Tierra a lo lejos
+  ctx.fillStyle = '#4aa04a'; ctx.fillRect(35, 22, 5, 4); ctx.fillRect(42, 28, 4, 3);
+  // superficie: lado iluminado a la izquierda, lado oscuro a la derecha
+  const sg = ctx.createLinearGradient(0, 0, W, 0);
+  sg.addColorStop(0, '#b8b0a0'); sg.addColorStop(.42, '#8a8478'); sg.addColorStop(.58, '#24222c'); sg.addColorStop(1, '#141218');
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.moveTo(0, 104); ctx.quadraticCurveTo(W / 2, 92, W, 104); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
+  for (const [cx, cy, rx] of [[30, 120, 10], [96, 130, 7], [170, 118, 12], [220, 134, 9]]) { ctx.beginPath(); ctx.ellipse(cx, cy, rx, rx / 3, 0, 0, 7); ctx.fill(); }
+  // el cohete de Tony aterrizado y su banderita
+  drawRocket(64, 74, .55, false);
+  ctx.fillStyle = '#5a5a5a'; ctx.fillRect(82, 86, 1, 12); ctx.fillStyle = '#c8323a'; ctx.fillRect(83, 86, 6, 4);
+  // ojos que brillan en la oscuridad
+  const eyes = [[200, 104], [222, 110], [238, 100], [186, 116]];
+  eyes.forEach(([ex, ey], i) => {
+    if (u < 25 + i * 22 || u > 150) return;
+    if ((u + i * 13) % 50 < 4) return;      // parpadean
+    ctx.fillStyle = '#7dff7a'; ctx.fillRect(ex, ey, 2, 1); ctx.fillRect(ex + 4, ey, 2, 1);
+  });
+  // los aliens salen de las sombras y caminan hacia el cohete
+  if (u > 140) {
+    [[0, 150], [24, 174], [46, 198]].forEach(([delay, stopX], i) => {
+      const k = Math.max(0, Math.min(1, (u - 140 - delay) / 140));
+      if (k <= 0) return;
+      const ax = Math.round(250 - (250 - stopX) * k), ay = 99 + i * 4;
+      ctx.drawImage(ALIEN[k < 1 && (u >> 3) % 2 ? 1 : 0], ax, ay);
+      if (k >= 1 && (u >> 4) % 2) { ctx.fillStyle = '#e8ff6a'; ctx.fillRect(ax + 4, ay - 2, 2, 2); }   // antenas que titilan
+    });
+  }
+  // un platillo volador se eleva detrás del horizonte
+  if (u > 170) {
+    const sy = Math.max(52, 104 - (u - 170) * .35), sx = 210;
+    ctx.fillStyle = 'rgba(160,255,160,.10)'; ctx.beginPath(); ctx.moveTo(sx - 6, sy + 4); ctx.lineTo(sx + 6, sy + 4); ctx.lineTo(sx + 16, 106); ctx.lineTo(sx - 16, 106); ctx.fill();
+    ctx.fillStyle = '#9fd8e8'; ctx.beginPath(); ctx.arc(sx, sy, 6, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#8a909c'; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 16, 4, 0, 0, 7); ctx.fill();
+    const lights = ['#ff4a3a', '#ffe27a', '#7dff7a', '#7ab0ff', '#ff7ae0'];
+    for (let i = 0; i < 5; i++) { ctx.fillStyle = lights[(i + (u >> 3)) % 5]; ctx.fillRect(sx - 12 + i * 6, sy + 2, 2, 1); }
+  }
+  text('EL LADO OSCURO DE LA LUNA', W / 2, 8, '#8a8299', 5, 'center');
+  // CONTINUARÁ... letra por letra
+  if (u > 300) {
+    const msg = 'CONTINUARÁ...', n = Math.min(msg.length, Math.floor((u - 300) / 9));
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 54, W, 26);
+    text(msg.slice(0, n), W / 2, 60, '#f2b33d', 12, 'center');
+  }
+}
+
 function drawFinale() {
   const t = finaleT;
+  if (t >= DARK_START) {
+    drawDarkSide(t - DARK_START);
+    if (t < DARK_START + 30) { ctx.fillStyle = `rgba(0,0,0,${1 - (t - DARK_START) / 30})`; ctx.fillRect(0, 0, W, H); }
+    return;
+  }
   ctx.save();
   if (shake > 0) ctx.translate(Math.round(rand(-2, 2)), Math.round(rand(-2, 2)));
   // el cielo pasa del atardecer a la noche y al espacio
@@ -1597,7 +1663,7 @@ function drawFinale() {
 function endGame() {
   state = 'end';
   try { localStorage.removeItem('cdp-chapter'); } catch (e) {}
-  $('endScore').textContent = 'Botín recuperado: $' + score + '. Tony y Sal ya están en la luna. Gracias por jugar.';
+  $('endScore').textContent = 'Botín recuperado: $' + score + '. Tony y Sal llegaron a la luna... pero no están solos. CONTINUARÁ.';
   show('end');
 }
 
