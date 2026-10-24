@@ -199,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 3 capítulos · Versión 8</p>
+    <p class="fine">Prototipo · 3 capítulos · Versión 9</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -1353,7 +1353,8 @@ function refreshContinue() {
 // pantalla completa: solo se ofrece donde el navegador la permite (Android/escritorio; iPhone no)
 const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
 const standalone = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
-const fsOK = !standalone && !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+// la app instalada abre en modo normal (más estable al arrancar); la pantalla completa se pide desde el botón
+const fsOK = !matchMedia('(display-mode: fullscreen)').matches && !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
 function toggleFull() {
   const d = document, el = d.documentElement;
   try {
