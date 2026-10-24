@@ -52,7 +52,7 @@ body{
 #keys{display:none;text-align:center;font-size:9px;color:var(--smoke);line-height:1.8}
 
 /* mandos */
-#pad{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:28px}
+#pad{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 6px 40px}
 .dpad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:2px}
 .key{display:grid;place-items:center;background:var(--ink);border:2px solid var(--edge);border-radius:6px;
   box-shadow:0 4px 0 #07060b;color:var(--smoke);font:14px var(--pixel);touch-action:none}
@@ -124,11 +124,12 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
 @media (orientation:landscape){
   #app{padding-block:8px;gap:0}
   #stage{flex:1;aspect-ratio:auto;max-height:none;min-height:0}
-  #pad{position:absolute;left:0;right:0;bottom:8px;pointer-events:none;padding:0}
+  /* mandos separados del borde (curvas y muesca del teléfono) y más grandes para los pulgares */
+  #pad{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom, 0px) + 22px);pointer-events:none;padding:0 18px}
   #pad .key,#pad .act{pointer-events:auto;opacity:.6}
-  .dpad{grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px)}
-  .actions{grid-template-columns:64px 64px;grid-template-rows:50px 50px}
-  .act{width:64px;height:64px}
+  .dpad{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:3px}
+  .actions{grid-template-columns:74px 74px;grid-template-rows:58px 58px;gap:8px 14px}
+  .act{width:74px;height:74px}
   #dialog{left:10%;right:10%}
   /* en horizontal las tres viñetas van en una sola fila */
   #cpage,.cbar{width:min(100%, calc((100dvh - 80px) * 4))}
@@ -586,7 +587,7 @@ function setCrouch(o, c) {
 // ---------------------------------------------------------------- disparos
 function fire(o, from, y, vx, vy = 0, big = false) {
   const x = vx > 0 ? o.x + o.w + 4 : o.x - 5;
-  bullets.push({ x, y, w: 4, h: 2, vx, vy, from, big, life: 160, travel: 0 });
+  bullets.push({ x, y, w: 4, h: 2, vx, vy, from, big, life: 160 });
   o.flash = 4;
   for (let i = 0; i < 3; i++) parts.push({ x: x + (vx > 0 ? 0 : 3), y: y + 1, vx: vx * 0.15 + rand(-.3, .3), vy: rand(-.6, .2), life: 8, col: '#ffe27a' });
 }
@@ -760,11 +761,15 @@ function updateBoss() {
 
 function updateBullets() {
   for (const bl of bullets) {
-    bl.x += bl.vx; bl.y += bl.vy; bl.life--; bl.travel += Math.abs(bl.vx);
+    bl.x += bl.vx; bl.y += bl.vy; bl.life--;
     if (bl.y + bl.h >= GROUND) { bl.life = 0; spark(bl.x, GROUND - 1, '#c9b58a', 3); continue; }
-    // Tony dispara por encima de la caja que lo cubre: sus balas ignoran la cobertura los primeros 16 px
-    const coverGrace = bl.from === 'p' && bl.travel <= 16;
-    if (!coverGrace) for (const s of solids) if (overlap(bl, s)) { bl.life = 0; spark(bl.x + (bl.vx > 0 ? 3 : 0), bl.y, '#d9a86a', 4); SFX.thud(); break; }
+    // las cajas frenan las balas de todos por igual; las astillas muestran que el tiro pegó en la cobertura
+    for (const s of solids) if (overlap(bl, s)) {
+      bl.life = 0;
+      const sx = bl.vx > 0 ? s.x : s.x + s.w;
+      spark(sx, bl.y, '#d9a86a', 9); spark(sx, bl.y, '#8a5a2b', 5);
+      SFX.thud(); break;
+    }
     if (!bl.life) continue;
     if (bl.from === 'p') {
       for (const e of enemies) {
