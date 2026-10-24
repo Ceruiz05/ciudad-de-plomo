@@ -199,7 +199,7 @@ h2{margin:0;font-size:clamp(16px,5vw,22px);line-height:1.4;font-weight:400;color
       <button class="mbtn" id="bInstall" hidden>⬇ INSTALAR APP</button>
     </div>
     <p class="fine" id="iosHint" hidden>En iPhone: toca Compartir y luego «Agregar a inicio» para instalarlo.</p>
-    <p class="fine">Prototipo · 3 capítulos · Versión 7</p>
+    <p class="fine">Prototipo · 3 capítulos · Versión 8</p>
   </div>
 
   <div id="pause" class="overlay" hidden>
@@ -1445,9 +1445,17 @@ if ('serviceWorker' in navigator) {
   };
   addEventListener('load', () => setTimeout(checkUpdate, 800));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
-  // cuando se instala un service worker nuevo (cambio de version de cache), recarga una vez sola
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
+  // cuando un service worker nuevo reemplaza al viejo, recarga UNA vez para mostrar la version nueva.
+  // Nunca en la primera instalacion y nunca dos veces en 30 s (evita recargas en cadena).
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;
+    let last = 0;
+    try { last = +sessionStorage.getItem('plomo-reload') || 0; } catch (e) {}
+    if (Date.now() - last < 30000) return;
+    try { sessionStorage.setItem('plomo-reload', String(Date.now())); } catch (e) {}
+    location.reload();
+  });
 }
 </script>
 </body>
